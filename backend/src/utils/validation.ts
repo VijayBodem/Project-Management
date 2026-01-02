@@ -3,9 +3,15 @@ import { Request, Response, NextFunction } from "express";
 
 // Validation schemas
 export const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters"),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password too long"),
 });
 
 export const loginSchema = z.object({
@@ -14,33 +20,63 @@ export const loginSchema = z.object({
 });
 
 export const createProjectSchema = z.object({
-  name: z.string().min(1, "Project name is required").max(100, "Project name too long"),
+  name: z
+    .string()
+    .min(1, "Project name is required")
+    .max(100, "Project name too long"),
+  description: z.string().max(500, "Description too long").optional(),
+});
+
+export const updateProjectSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Project name is required")
+    .max(100, "Project name too long")
+    .optional(),
   description: z.string().max(500, "Description too long").optional(),
 });
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, "Task title is required").max(200, "Task title too long"),
+  title: z
+    .string()
+    .min(1, "Task title is required")
+    .max(200, "Task title too long"),
   description: z.string().max(1000, "Description too long").optional(),
   project: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid project ID"),
-  assignedTo: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID")).optional(),
+  assignedTo: z
+    .array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID"))
+    .optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   dueDate: z.string().optional().or(z.literal("")),
 });
 
 export const updateTaskSchema = z.object({
-  title: z.string().min(1, "Task title is required").max(200, "Task title too long").optional(),
+  title: z
+    .string()
+    .min(1, "Task title is required")
+    .max(200, "Task title too long")
+    .optional(),
   description: z.string().max(1000, "Description too long").optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   dueDate: z.string().optional().or(z.literal("")).or(z.null()),
+  assignedTo: z
+    .array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID"))
+    .optional(),
 });
 
 export const createCommentSchema = z.object({
   taskId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid task ID"),
-  content: z.string().min(1, "Comment cannot be empty").max(2000, "Comment too long"),
+  content: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(2000, "Comment too long"),
 });
 
 export const updateCommentSchema = z.object({
-  content: z.string().min(1, "Comment cannot be empty").max(2000, "Comment too long"),
+  content: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(2000, "Comment too long"),
 });
 
 export const addMemberSchema = z.object({
@@ -58,22 +94,30 @@ export const searchSchema = z.object({
 });
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters").optional(),
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters")
+    .optional(),
   bio: z.string().max(500, "Bio too long").optional(),
   avatar: z.string().url("Invalid avatar URL").optional().or(z.literal("")),
 });
 
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters").max(100, "Password too long"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(6, "New password must be at least 6 characters")
+      .max(100, "Password too long"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export const updatePreferencesSchema = z.object({
-  theme: z.enum(["light", "dark", "system"]).optional(),
   emailNotifications: z.boolean().optional(),
   pushNotifications: z.boolean().optional(),
 });

@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
+import mongoose from "mongoose";
 import { Project } from "../models/Project.model";
 import { Task, TaskStatus } from "../models/Task.model";
 import { User } from "../models/User";
 import { authenticate } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validation";
-import { createProjectSchema, addMemberSchema, transferOwnershipSchema } from "../utils/validation";
+import { createProjectSchema, addMemberSchema, transferOwnershipSchema, updateProjectSchema } from "../utils/validation";
 import { asyncHandler } from "../middlewares/errorHandler";
 import { checkProjectMembership, requirePermission } from "../middlewares/permission.middleware";
 import { ProjectPermission, ProjectRole } from "../utils/projectRoles";
@@ -371,6 +372,62 @@ router.patch("/:projectId/transfer", authenticate, validate(transferOwnershipSch
   res.json({
     message: "Ownership transferred successfully",
     project: updatedProject,
+  });
+}));
+
+// Update project
+router.patch("/:projectId", authenticate, checkProjectMembership, requirePermission(ProjectPermission.EDIT_PROJECT), validate(updateProjectSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const updates = req.body;
+
+  const project = await Project.findById(projectId);
+
+  if (!project) {
+    throw new AppError("Project not found", 404);
+  }
+
+  // Update allowed fields
+  if (updates.name !== undefined) {
+    project.name = updates.name;
+  }
+  if (updates.description !== undefined) {
+    project.description = updates.description;
+  }
+
+  await project.save();
+
+  res.json({
+    success: true,
+    message: "Project updated successfully",
+    project,
+  });
+}));
+
+// Delete project (soft delete)
+router.delete("/:projectId", authenticate, checkProjectMembership, requirePermission(ProjectPermission.DELETE_PROJECT), asyncHandler(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+
+  const project = await Project.findById(projectId);
+
+  if (!project) {
+    throw new AppError("Project not found", 404);
+  }
+
+  // Check if user is the owner (only owners can delete projects)
+  if (project.createdBy.toString() !== req.user!.userId) {
+    throw new AppError("Only project owners can delete projects", 403);
+  }
+
+  // Soft delete
+  project.isDeleted = true;
+  project.deletedAt = new Date();
+  project.deletedBy = new mongoose.Types.ObjectId(req.user!.userId);
+
+  await project.save();
+
+  res.json({
+    success: true,
+    message: "Project deleted successfully",
   });
 }));
 

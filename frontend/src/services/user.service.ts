@@ -13,7 +13,6 @@ export interface UserProfile {
   avatar?: string;
   bio?: string;
   preferences: {
-    theme: "light" | "dark" | "system";
     emailNotifications: boolean;
     pushNotifications: boolean;
   };
@@ -34,7 +33,6 @@ export interface ChangePasswordData {
 }
 
 export interface UpdatePreferencesData {
-  theme?: "light" | "dark" | "system";
   emailNotifications?: boolean;
   pushNotifications?: boolean;
 }

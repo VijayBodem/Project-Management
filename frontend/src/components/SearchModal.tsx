@@ -62,27 +62,27 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-start justify-center z-[1003] pt-20 px-5"
+      className="fixed inset-0 bg-black/50"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-[700px] max-h-[600px] flex flex-col shadow-xl"
+        className="bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input */}
-        <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-5 border-b border-gray-200">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search projects and tasks..."
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300"
           />
         </div>
 
         {/* Filter */}
-        <div className="py-3 px-5 border-b border-gray-200 dark:border-gray-700 flex gap-2">
+        <div className="py-3 px-5 border-b border-gray-200">
           {(["all", "projects", "tasks"] as const).map((f) => (
             <button
               key={f}
@@ -90,7 +90,7 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
               className={`py-1.5 px-3 border-none rounded text-xs capitalize cursor-pointer transition-colors ${
                 filter === f
                   ? "bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-gray-100"
               }`}
             >
               {f}
@@ -101,15 +101,15 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
         {/* Results */}
         <div className="flex-1 overflow-y-auto p-5">
           {query.length < 2 ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+            <div className="text-center text-gray-500">
               Type at least 2 characters to search
             </div>
           ) : loading ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+            <div className="text-center text-gray-500">
               Searching...
             </div>
           ) : !results ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+            <div className="text-center text-gray-500">
               No results found
             </div>
           ) : (
@@ -117,7 +117,7 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
               {/* Projects */}
               {results.projects.length > 0 && (
                 <div>
-                  <h3 className="m-0 mb-3 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                  <h3 className="m-0 mb-3 text-sm font-semibold text-gray-600">
                     Projects ({results.projects.length})
                   </h3>
                   <div className="flex flex-col gap-2">
@@ -125,17 +125,17 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
                       <div
                         key={project._id}
                         onClick={() => handleProjectClick(project._id)}
-                        className="p-3 border border-gray-200 dark:border-gray-700 rounded cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="p-3 border border-gray-200"
                       >
-                        <div className="font-medium text-sm mb-1 text-gray-900 dark:text-white">
+                        <div className="font-medium text-sm mb-1 text-gray-900">
                           {project.name}
                         </div>
                         {project.description && (
-                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <div className="text-xs text-gray-600">
                             {project.description}
                           </div>
                         )}
-                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500">
                           Created by {project.createdBy.name}
                         </div>
                       </div>
@@ -147,7 +147,7 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
               {/* Tasks */}
               {results.tasks.length > 0 && (
                 <div>
-                  <h3 className="m-0 mb-3 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                  <h3 className="m-0 mb-3 text-sm font-semibold text-gray-600">
                     Tasks ({results.tasks.length})
                   </h3>
                   <div className="flex flex-col gap-2">
@@ -155,17 +155,17 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
                       <div
                         key={task._id}
                         onClick={() => handleTaskClick(task)}
-                        className="p-3 border border-gray-200 dark:border-gray-700 rounded cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="p-3 border border-gray-200"
                       >
-                        <div className="font-medium text-sm mb-1 text-gray-900 dark:text-white">
+                        <div className="font-medium text-sm mb-1 text-gray-900">
                           {task.title}
                         </div>
                         {task.description && (
-                          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                          <div className="text-xs text-gray-600">
                             {task.description}
                           </div>
                         )}
-                        <div className="text-xs text-gray-500 dark:text-gray-500 flex gap-3">
+                        <div className="text-xs text-gray-500">
                           <span>
                             Project:{" "}
                             {typeof task.project === "string"
@@ -186,7 +186,7 @@ export const SearchModal = ({ isOpen, onClose }: Props) => {
               )}
 
               {results.projects.length === 0 && results.tasks.length === 0 && (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+                <div className="text-center text-gray-500">
                   No results found for "{query}"
                 </div>
               )}

@@ -102,15 +102,14 @@ router.post("/change-password", authenticate, passwordChangeLimiter, validate(ch
 
 // Update user preferences
 router.patch("/preferences", authenticate, validate(updatePreferencesSchema), asyncHandler(async (req: Request, res: Response) => {
-  const { theme, emailNotifications, pushNotifications } = req.body;
+  const { emailNotifications, pushNotifications } = req.body;
 
   const user = await User.findById(req.user!.userId);
-  
+
   if (!user) {
     throw new AppError("User not found", 404);
   }
 
-  if (theme) user.preferences.theme = theme;
   if (emailNotifications !== undefined) user.preferences.emailNotifications = emailNotifications;
   if (pushNotifications !== undefined) user.preferences.pushNotifications = pushNotifications;
 

@@ -8,7 +8,7 @@ export const ErrorMessage = ({ message, className = "" }: Props) => {
 
   return (
     <div
-      className={`text-sm text-red-600 dark:text-red-400 mt-1 ${className}`}
+      className={`text-sm text-red-600  mt-1 ${className}`}
       role="alert"
     >
       {message}
@@ -19,7 +19,7 @@ export const ErrorMessage = ({ message, className = "" }: Props) => {
 export const ErrorAlert = ({ message, onClose }: { message: string; onClose?: () => void }) => {
   return (
     <div
-      className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg relative mb-4"
+      className="bg-red-50 /20 border border-red-200  text-red-800  px-4 py-3 rounded-lg relative mb-4"
       role="alert"
     >
       <div className="flex items-start">
@@ -38,7 +38,7 @@ export const ErrorAlert = ({ message, onClose }: { message: string; onClose?: ()
         {onClose && (
           <button
             onClick={onClose}
-            className="ml-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+            className="ml-2 text-red-600  hover:text-red-800 :text-red-200"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -57,7 +57,7 @@ export const ErrorAlert = ({ message, onClose }: { message: string; onClose?: ()
 export const SuccessAlert = ({ message, onClose }: { message: string; onClose?: () => void }) => {
   return (
     <div
-      className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg relative mb-4"
+      className="bg-green-50 /20 border border-green-200  text-green-800  px-4 py-3 rounded-lg relative mb-4"
       role="alert"
     >
       <div className="flex items-start">
@@ -76,7 +76,7 @@ export const SuccessAlert = ({ message, onClose }: { message: string; onClose?: 
         {onClose && (
           <button
             onClick={onClose}
-            className="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
+            className="ml-2 text-green-600  hover:text-green-800 :text-green-200"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path

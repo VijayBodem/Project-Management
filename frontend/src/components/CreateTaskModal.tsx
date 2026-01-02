@@ -80,16 +80,16 @@ export const CreateTaskModal = ({
       onClick={handleClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[90%] max-w-[500px] shadow-xl"
+        className="bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-5 text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold mb-5 text-gray-900">
           Create New Task
         </h2>
 
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <div className="mb-4">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Task Title *
             </label>
             <input
@@ -97,13 +97,13 @@ export const CreateTaskModal = ({
               {...register("title")}
               placeholder="Enter task title"
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             />
             <ErrorMessage message={errors.title?.message} />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -111,19 +111,19 @@ export const CreateTaskModal = ({
               placeholder="Enter task description (optional)"
               rows={3}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-y disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             />
             <ErrorMessage message={errors.description?.message} />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Priority
             </label>
             <select
               {...register("priority")}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -134,49 +134,49 @@ export const CreateTaskModal = ({
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Due Date
             </label>
             <input
               type="date"
               {...register("dueDate")}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             />
             <ErrorMessage message={errors.dueDate?.message} />
           </div>
 
           <div className="mb-5">
-            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Assign To ({selectedAssignees.length} selected)
             </label>
-            <div className="max-h-[200px] overflow-y-auto border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 p-2">
+            <div className="max-h-[200px] overflow-y-auto border border-gray-300">
               {members.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 p-2">No members available</p>
+                <p className="text-sm text-gray-500">No members available</p>
               ) : (
                 members.map((member) => (
                   <label
                     key={member.user._id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors"
+                    className="flex items-center gap-2 p-2 hover:bg-gray-50"
                   >
                     <input
                       type="checkbox"
                       checked={selectedAssignees.includes(member.user._id)}
                       onChange={() => toggleAssignee(member.user._id)}
                       disabled={loading}
-                      className="w-4 h-4 text-blue-500 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-4 h-4 text-blue-500 border-gray-300"
                     />
-                    <span className="text-sm text-gray-900 dark:text-white flex-1">
+                    <span className="text-sm text-gray-900">
                       {member.user.name}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {member.user.email}
                     </span>
                   </label>
                 ))
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500">
               Select one or more members to assign this task
             </p>
           </div>
@@ -186,7 +186,7 @@ export const CreateTaskModal = ({
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2.5 border border-gray-300"
             >
               Cancel
             </button>

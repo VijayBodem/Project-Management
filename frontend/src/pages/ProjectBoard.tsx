@@ -1,9 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { KanbanBoard } from "../components/KanbanBoard";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProjectMembers, type ProjectMember } from "../services/member.service";
+import {
+  getProjectMembers,
+  type ProjectMember,
+} from "../services/member.service";
 import { MemberManagementModal } from "../components/MemberManagementModal";
 import { getCurrentUser } from "../services/user.service";
+import { usePermissions } from "../hooks/usePermissions";
+import { ProjectRole } from "../types/permissions";
 import {
   getProjectTasks,
   createTask,
@@ -12,7 +17,9 @@ import {
   deleteTask,
   type Task,
 } from "../services/task.service";
+import { updateProject, deleteProject } from "../services/project.service";
 import { CreateTaskModal } from "../components/CreateTaskModal";
+import { CreateProjectModal } from "../components/CreateProjectModal";
 import { TaskDetailsModal } from "../components/TaskDetailsModal";
 import { PresenceIndicator } from "../components/PresenceIndicator";
 import { CollaborativeCursor } from "../components/CollaborativeCursor";
@@ -48,14 +55,16 @@ export const ProjectBoard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [projectCreatorId, setProjectCreatorId] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
+  const [userRole, setUserRole] = useState<ProjectRole | undefined>(undefined);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
+  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
-  
+  const [projectDescription, setProjectDescription] = useState("");
+
   // Filters
   const [filterAssignee, setFilterAssignee] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -66,6 +75,9 @@ export const ProjectBoard = () => {
   const [cursors, setCursors] = useState<Cursor[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const cursorThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Permissions
+  const permissions = usePermissions({ userRole });
 
   // Real-time task updates using hook
   useTaskRealtime({
@@ -81,9 +93,7 @@ export const ProjectBoard = () => {
     },
     onTaskUpdated: (task) => {
       console.log("📝 Task updated:", task);
-      setTasks((prev) =>
-        prev.map((t) => (t._id === task._id ? task : t))
-      );
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
       addToast({
         title: "Task Updated",
         message: `Task updated: ${task.title}`,
@@ -150,9 +160,7 @@ export const ProjectBoard = () => {
         const existing = prev.find((c) => c.userId === data.userId);
         if (existing) {
           return prev.map((c) =>
-            c.userId === data.userId
-              ? { ...c, x: data.x, y: data.y }
-              : c
+            c.userId === data.userId ? { ...c, x: data.x, y: data.y } : c
           );
         }
         return [...prev, data];
@@ -207,15 +215,21 @@ export const ProjectBoard = () => {
       ]);
 
       setTasks(tasksData.tasks);
-      console.log('mebersDtatatat', membersData)
+      console.log("mebersDtatatat", membersData);
       setMembers(membersData.members);
-      setProjectCreatorId(membersData.createdBy._id);
       setCurrentUserId(userData.userId);
 
       const statsRes = await api.get(`/projects/${projectId}/stats`);
       setProjectName(statsRes.data.project.name);
-    } catch (error) {
+      setProjectDescription(statsRes.data.project.description || "");
+      setUserRole(statsRes.data.userRole);
+    } catch (error: any) {
       console.error("Failed to fetch data:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to load project data",
+        type: "error",
+      });
     }
   };
 
@@ -223,10 +237,12 @@ export const ProjectBoard = () => {
     let filtered = [...tasks];
 
     if (showUnassigned) {
-      filtered = filtered.filter((t) => !t.assignedTo || t.assignedTo.length === 0);
+      filtered = filtered.filter(
+        (t) => !t.assignedTo || t.assignedTo.length === 0
+      );
     } else if (filterAssignee !== "all") {
-      filtered = filtered.filter((t) => 
-        t.assignedTo?.some(assignee => assignee._id === filterAssignee)
+      filtered = filtered.filter((t) =>
+        t.assignedTo?.some((assignee) => assignee._id === filterAssignee)
       );
     }
 
@@ -252,12 +268,21 @@ export const ProjectBoard = () => {
       await fetchData();
     } catch (error: any) {
       console.error("Failed to create task:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to create task",
+        type: "error",
+      });
     }
   };
 
-  const handleStatusChange = async (taskId: string, newStatus: string, newPosition?: number) => {
+  const handleStatusChange = async (
+    taskId: string,
+    newStatus: string,
+    newPosition?: number
+  ) => {
     // Optimistic update
-    const taskToMove = tasks.find(t => t._id === taskId);
+    const taskToMove = tasks.find((t) => t._id === taskId);
     if (!taskToMove) return;
 
     const oldStatus = taskToMove.status;
@@ -267,11 +292,15 @@ export const ProjectBoard = () => {
     setTasks((prev) => {
       const updated = prev.map((task) => {
         if (task._id === taskId) {
-          return { ...task, status: newStatus as Task["status"], position: newPosition ?? task.position };
+          return {
+            ...task,
+            status: newStatus as Task["status"],
+            position: newPosition ?? task.position,
+          };
         }
         return task;
       });
-      
+
       // Sort by position within each status
       return updated.sort((a, b) => {
         if (a.status !== b.status) return 0;
@@ -281,25 +310,31 @@ export const ProjectBoard = () => {
 
     try {
       // Send to server
-      const updatedTask = await updateTaskStatus(taskId, newStatus, newPosition);
-      
+      const updatedTask = await updateTaskStatus(
+        taskId,
+        newStatus,
+        newPosition
+      );
+
       // Update with server response
       setTasks((prev) =>
         prev.map((task) => (task._id === taskId ? updatedTask : task))
       );
     } catch (error) {
       console.error("Failed to update status:", error);
-      
+
       // Revert on error
       setTasks((prev) =>
         prev.map((task) =>
-          task._id === taskId ? { ...task, status: oldStatus, position: oldPosition } : task
+          task._id === taskId
+            ? { ...task, status: oldStatus, position: oldPosition }
+            : task
         )
       );
-      
+
       addToast({
         title: "Error",
-        message: "Failed to update task status",
+        message: "Failed to update task status. Changes have been reverted.",
         type: "error",
       });
     }
@@ -313,6 +348,11 @@ export const ProjectBoard = () => {
       );
     } catch (error: any) {
       console.error("Failed to assign task:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to assign task",
+        type: "error",
+      });
     }
   };
 
@@ -335,6 +375,11 @@ export const ProjectBoard = () => {
       setTasks((prev) => prev.filter((t) => t._id !== taskId));
     } catch (error: any) {
       console.error("Failed to delete task:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to delete task",
+        type: "error",
+      });
     }
   };
 
@@ -344,24 +389,99 @@ export const ProjectBoard = () => {
     setShowUnassigned(false);
   };
 
+  const handleEditProject = async (data: {
+    name: string;
+    description?: string;
+  }) => {
+    try {
+      await updateProject(projectId!, data);
+      setProjectName(data.name);
+      setProjectDescription(data.description || "");
+      addToast({
+        title: "Success",
+        message: "Project updated successfully",
+        type: "success",
+      });
+    } catch (error: any) {
+      console.error("Failed to update project:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to update project",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this project? This action cannot be undone."
+      )
+    )
+      return;
+
+    try {
+      await deleteProject(projectId!);
+      addToast({
+        title: "Success",
+        message: "Project deleted successfully",
+        type: "success",
+      });
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Failed to delete project:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to delete project",
+        type: "error",
+      });
+    }
+  };
+
   const hasActiveFilters =
     filterAssignee !== "all" || filterStatus !== "all" || showUnassigned;
 
   return (
-    <div className="p-5 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="py-2 px-4 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 cursor-pointer text-sm mb-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="m-0 mb-2 text-3xl text-gray-900 dark:text-white">
-            {projectName || "Project Board"}
-          </h1>
-        </div>
+    <div className="page-container">
+      <div className="content-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="btn btn-ghost"
+            >
+              ← Back to Dashboard
+            </button>
+            <div>
+              <h1 className="m-0 mb-1 text-3xl font-bold text-gray-800">
+                {projectName || "Project Board"}
+              </h1>
+              {projectDescription && (
+                <p className="m-0 text-gray-600">{projectDescription}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {permissions.canEditProject && (
+                <button
+                  onClick={() => setShowEditProjectModal(true)}
+                  className="btn btn-secondary btn-sm"
+                  title="Edit project"
+                >
+                  ✏️ Edit
+                </button>
+              )}
+              {permissions.canDeleteProject && (
+                <button
+                  onClick={handleDeleteProject}
+                  className="btn btn-danger btn-sm"
+                  title="Delete project"
+                >
+                  🗑️ Delete
+                </button>
+              )}
+            </div>
+          </div>
 
         <div className="flex items-center gap-4">
           {/* Presence Indicator */}
@@ -374,7 +494,7 @@ export const ProjectBoard = () => {
                 <div
                   key={member.user._id}
                   title={member.user.name}
-                  className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold border-2 border-white dark:border-gray-900 cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold border-2 border-white"
                   style={{ marginLeft: index > 0 ? "-8px" : "0" }}
                 >
                   {member.user.name.charAt(0).toUpperCase()}
@@ -382,25 +502,27 @@ export const ProjectBoard = () => {
               ))}
               {members.length > 3 && (
                 <div
-                  className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-[11px] font-semibold border-2 border-white dark:border-gray-900"
+                  className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-[11px] font-semibold border-2 border-white"
                   style={{ marginLeft: "-8px" }}
                 >
                   +{members.length - 3}
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShowMemberModal(true)}
-              className="py-2 px-4 border border-blue-500 rounded bg-white dark:bg-gray-800 text-blue-500 cursor-pointer text-sm font-medium hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Manage Members
-            </button>
+            {permissions.canManageMembers && (
+              <button
+                onClick={() => setShowMemberModal(true)}
+                className="py-2 px-4 border border-blue-500 rounded bg-white"
+              >
+                Manage Members
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Filters and Actions */}
-      <div className="flex justify-between items-center mb-5 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
+      <div className="flex justify-between items-center mb-5 p-4 bg-white">
         <div className="flex gap-3 items-center">
           <select
             value={filterAssignee}
@@ -408,7 +530,7 @@ export const ProjectBoard = () => {
               setFilterAssignee(e.target.value);
               setShowUnassigned(false);
             }}
-            className="py-2 px-3 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 border border-gray-300"
           >
             <option value="all">All Assignees</option>
             {members.map((member) => (
@@ -421,7 +543,7 @@ export const ProjectBoard = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="py-2 px-3 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 border border-gray-300"
           >
             <option value="all">All Statuses</option>
             <option value="todo">To Do</option>
@@ -439,29 +561,33 @@ export const ProjectBoard = () => {
               }}
               className="cursor-pointer"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Unassigned only</span>
+            <span className="text-sm text-gray-700">
+              Unassigned only
+            </span>
           </label>
 
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="py-2 px-3 border border-red-500 rounded bg-white dark:bg-gray-800 text-red-500 cursor-pointer text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="py-2 px-3 border border-red-500 rounded bg-white"
             >
               Clear Filters
             </button>
           )}
         </div>
 
-        <button
-          onClick={() => setShowTaskModal(true)}
-          className="py-2.5 px-5 border-none rounded bg-blue-500 text-white cursor-pointer text-sm font-medium hover:bg-blue-600 transition-colors"
-        >
-          + Create Task
-        </button>
+        {permissions.canCreateTask && (
+          <button
+            onClick={() => setShowTaskModal(true)}
+            className="py-2.5 px-5 border-none rounded bg-blue-500 text-white cursor-pointer text-sm font-medium hover:bg-blue-600 transition-colors"
+          >
+            + Create Task
+          </button>
+        )}
       </div>
 
       {/* Task Count */}
-      <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+      <div className="mb-4 text-sm text-gray-600">
         Showing {filteredTasks.length} of {tasks.length} tasks
       </div>
 
@@ -473,6 +599,7 @@ export const ProjectBoard = () => {
         onAssign={handleAssign}
         onDelete={handleDelete}
         onOpenDetails={handleOpenDetails}
+        canDeleteTask={permissions.canDeleteTask}
       />
 
       {/* Modals */}
@@ -480,8 +607,7 @@ export const ProjectBoard = () => {
         isOpen={showMemberModal}
         onClose={() => setShowMemberModal(false)}
         projectId={projectId!}
-        projectCreatorId={projectCreatorId}
-        currentUserId={currentUserId}
+        userRole={userRole}
       />
 
       <CreateTaskModal
@@ -500,13 +626,25 @@ export const ProjectBoard = () => {
           }}
           taskId={selectedTaskId}
           currentUserId={currentUserId}
+          userRole={userRole}
+          members={members}
           onTaskUpdate={handleTaskUpdate}
         />
       )}
 
-      {/* Real-time collaboration features */}
-      <CollaborativeCursor cursors={cursors} />
-      <ToastNotification toasts={toasts} onRemove={removeToast} />
+      <CreateProjectModal
+        isOpen={showEditProjectModal}
+        onClose={() => setShowEditProjectModal(false)}
+        onSubmit={handleEditProject}
+        initialData={{ name: projectName, description: projectDescription }}
+        title="Edit Project"
+        submitButtonText="Update Project"
+      />
+
+        {/* Real-time collaboration features */}
+        <CollaborativeCursor cursors={cursors} />
+        <ToastNotification toasts={toasts} onRemove={removeToast} />
+      </div>
     </div>
   );
 };

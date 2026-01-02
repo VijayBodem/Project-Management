@@ -43,13 +43,13 @@ const ToastItem = ({
   const getToastClasses = () => {
     switch (toast.type) {
       case "success":
-        return "bg-green-500 dark:bg-green-600";
+        return "bg-green-500";
       case "error":
-        return "bg-red-500 dark:bg-red-600";
+        return "bg-red-500";
       case "warning":
-        return "bg-orange-500 dark:bg-orange-600";
+        return "bg-orange-500";
       default:
-        return "bg-blue-500 dark:bg-blue-600";
+        return "bg-blue-500";
     }
   };
 

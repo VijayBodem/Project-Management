@@ -12,6 +12,7 @@ interface Props {
   onAssign: (taskId: string, userIds: string[]) => void;
   onDelete: (taskId: string) => void;
   onOpenDetails: (taskId: string) => void;
+  canDeleteTask?: boolean;
 }
 
 const columns: { id: TaskStatus; label: string }[] = [
@@ -27,6 +28,7 @@ export const KanbanBoard = ({
   onAssign,
   onDelete,
   onOpenDetails,
+  canDeleteTask = true,
 }: Props) => {
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
@@ -57,15 +59,15 @@ export const KanbanBoard = ({
                   {...provided.droppableProps}
                   className={`min-w-[320px] flex-1 rounded-lg p-4 transition-colors ${
                     snapshot.isDraggingOver
-                      ? "bg-gray-100 dark:bg-gray-700"
-                      : "bg-gray-50 dark:bg-gray-800"
+                      ? "bg-gray-100"
+                      : "bg-gray-50"
                   }`}
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="m-0 text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                    <h3 className="m-0 text-sm font-semibold text-gray-700">
                       {col.label}
                     </h3>
-                    <span className="bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                    <span className="bg-gray-200">
                       {columnTasks.length}
                     </span>
                   </div>
@@ -87,6 +89,7 @@ export const KanbanBoard = ({
                               onDelete={onDelete}
                               onOpenDetails={onOpenDetails}
                               provided={provided}
+                              canDeleteTask={canDeleteTask}
                             />
                           )}
                         </Draggable>

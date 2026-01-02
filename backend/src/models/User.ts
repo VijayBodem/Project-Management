@@ -10,7 +10,6 @@ export interface IUser extends Document {
   avatar?: string;
   bio?: string;
   preferences: {
-    theme: "light" | "dark" | "system";
     emailNotifications: boolean;
     pushNotifications: boolean;
   };
@@ -61,11 +60,6 @@ const UserSchema = new Schema<IUser>(
     },
 
     preferences: {
-      theme: {
-        type: String,
-        enum: ["light", "dark", "system"],
-        default: "system",
-      },
       emailNotifications: {
         type: Boolean,
         default: true,

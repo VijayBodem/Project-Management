@@ -155,27 +155,27 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 right-0 bottom-0 w-[400px] bg-white dark:bg-gray-800 shadow-[-2px_0_8px_rgba(0,0,0,0.1)] dark:shadow-[-2px_0_8px_rgba(0,0,0,0.3)] z-[1002] flex flex-col">
+    <div className="fixed top-0 right-0 bottom-0 w-[400px] bg-white shadow-[-2px_0_8px_rgba(0,0,0,0.1)] z-[1002] flex flex-col">
       {/* Header */}
-      <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h2 className="m-0 text-xl text-gray-900 dark:text-white">Notifications</h2>
+      <div className="p-5 border-b border-gray-200  flex justify-between items-center">
+        <h2 className="m-0 text-xl text-gray-900 ">Notifications</h2>
         <button
           onClick={onClose}
-          className="border-none bg-transparent cursor-pointer text-2xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          className="border-none bg-transparent cursor-pointer text-2xl text-gray-500  hover:text-gray-700 :text-gray-200 transition-colors"
         >
           ×
         </button>
       </div>
 
       {/* Filter and Actions */}
-      <div className="py-3 px-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <div className="py-3 px-5 border-b border-gray-200  flex justify-between items-center">
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("all")}
             className={`py-1.5 px-3 border-none rounded text-xs cursor-pointer transition-colors ${
               filter === "all"
                 ? "bg-blue-500 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-gray-100  text-gray-600  hover:bg-gray-200 :bg-gray-600"
             }`}
           >
             All
@@ -185,7 +185,7 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
             className={`py-1.5 px-3 border-none rounded text-xs cursor-pointer transition-colors ${
               filter === "unread"
                 ? "bg-blue-500 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-gray-100  text-gray-600  hover:bg-gray-200 :bg-gray-600"
             }`}
           >
             Unread
@@ -196,7 +196,7 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
           {notifications.some((n) => !n.read) && (
             <button
               onClick={handleMarkAllAsRead}
-              className="py-1.5 px-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 cursor-pointer text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="py-1.5 px-3 border border-gray-300  rounded bg-white  cursor-pointer text-xs text-gray-600  hover:bg-gray-50 :bg-gray-700 transition-colors"
             >
               Mark all read
             </button>
@@ -204,7 +204,7 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
           {notifications.some((n) => n.read) && (
             <button
               onClick={handleClearRead}
-              className="py-1.5 px-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 cursor-pointer text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="py-1.5 px-3 border border-gray-300  rounded bg-white  cursor-pointer text-xs text-gray-600  hover:bg-gray-50 :bg-gray-700 transition-colors"
             >
               Clear read
             </button>
@@ -215,11 +215,11 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
       {/* Notifications List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="py-10 text-center text-gray-500 dark:text-gray-400">
+          <div className="py-10 text-center text-gray-500 ">
             Loading...
           </div>
         ) : notifications.length === 0 ? (
-          <div className="py-10 text-center text-gray-500 dark:text-gray-400">
+          <div className="py-10 text-center text-gray-500 ">
             {filter === "unread"
               ? "No unread notifications"
               : "No notifications yet"}
@@ -229,10 +229,10 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
             <div
               key={notification._id}
               onClick={() => handleNotificationClick(notification)}
-              className={`py-4 px-5 border-b border-gray-100 dark:border-gray-700 cursor-pointer relative transition-colors ${
+              className={`py-4 px-5 border-b border-gray-100  cursor-pointer relative transition-colors ${
                 notification.read
-                  ? "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  : "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                  ? "bg-white  hover:bg-gray-50 :bg-gray-700"
+                  : "bg-blue-50 /20 hover:bg-blue-100 :bg-blue-900/30"
               }`}
             >
               <div className="flex gap-3">
@@ -240,13 +240,13 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
                   {getNotificationIcon(notification.type)}
                 </div>
                 <div className="flex-1">
-                  <div className={`text-sm mb-1 ${notification.read ? "font-normal" : "font-semibold"} text-gray-900 dark:text-white`}>
+                  <div className={`text-sm mb-1 ${notification.read ? "font-normal" : "font-semibold"} text-gray-900 `}>
                     {notification.title}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="text-xs text-gray-600  mb-2">
                     {notification.message}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 flex justify-between items-center">
+                  <div className="text-xs text-gray-500  flex justify-between items-center">
                     <span>{formatTime(notification.createdAt)}</span>
                     {notification.actor && (
                       <span>by {notification.actor.name}</span>
@@ -258,7 +258,7 @@ export const NotificationCenter = ({ isOpen, onClose, onNewNotification }: Props
                     e.stopPropagation();
                     handleDelete(notification._id);
                   }}
-                  className="border-none bg-transparent cursor-pointer text-gray-500 dark:text-gray-400 text-base p-0 px-1 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  className="border-none bg-transparent cursor-pointer text-gray-500  text-base p-0 px-1 hover:text-red-500 :text-red-400 transition-colors"
                   title="Delete"
                 >
                   ×

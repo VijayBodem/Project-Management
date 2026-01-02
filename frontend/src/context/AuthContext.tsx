@@ -1,59 +1,69 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { connectSocket, disconnectSocket } from "../services/socket";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
-  loading: boolean;
+  loading?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem("accessToken");
+  });
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      setIsAuthenticated(!!token);
-      
-      // Connect socket and listen for logout events
-      const socket = connectSocket();
-      
-      socket.on("auth:logout", (data: { message: string; logoutAll: boolean }) => {
-        console.log("🚪 Logout event received:", data);
-        
-        // Force logout on this device
-        handleForceLogout();
-      });
-      
-      return () => {
-        socket.off("auth:logout");
-      };
-    }
-    setLoading(false);
-  }, []);
+  // const [loading, setLoading] = useState(true);
 
-  const handleForceLogout = () => {
+  const handleForceLogout = useCallback(() => {
     console.log("🔒 Force logout - clearing session");
     disconnectSocket();
     localStorage.clear();
     setIsAuthenticated(false);
-    
+
     // Redirect to login page
     window.location.href = "/login";
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // setLoading(false);
+      return;
+    }
+
+    const socket = connectSocket();
+
+    socket.on(
+      "auth:logout",
+      (data: { message: string; logoutAll: boolean }) => {
+        console.log("🚪 Logout event received:", data);
+        handleForceLogout();
+      }
+    );
+
+    // setLoading(false);
+
+    return () => {
+      socket.off("auth:logout");
+    };
+  }, [isAuthenticated, handleForceLogout]);
 
   const login = (accessToken: string, refreshToken: string) => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
     connectSocket();
     setIsAuthenticated(true);
-    
-    // Trigger theme reload after login
-    window.dispatchEvent(new Event('auth-changed'));
+
+    // Trigger auth change event for components that need to react to login
+    window.dispatchEvent(new Event("auth-changed"));
   };
 
   const logout = () => {
@@ -63,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

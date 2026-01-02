@@ -9,7 +9,13 @@ import {
   type User,
   type ProjectMember,
 } from "../services/member.service";
-import { ProjectRole, getRoleDisplayName, getRoleColor } from "../types/permissions";
+import { ToastNotification, type Toast } from "./ToastNotification";
+import {
+  ProjectRole,
+  getRoleDisplayName,
+  getRoleColor,
+} from "../types/permissions";
+import { usePermissions } from "../hooks/usePermissions";
 
 // Helper function for role descriptions
 const getRoleDescription = (role: ProjectRole): string => {
@@ -26,16 +32,14 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
-  projectCreatorId: string;
-  currentUserId: string;
+  userRole?: ProjectRole;
 }
 
 export const MemberManagementModal = ({
   isOpen,
   onClose,
   projectId,
-  projectCreatorId,
-  currentUserId,
+  userRole,
 }: Props) => {
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [createdBy, setCreatedBy] = useState<User | null>(null);
@@ -43,10 +47,22 @@ export const MemberManagementModal = ({
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"members" | "add">("members");
-  const [selectedRole, setSelectedRole] = useState<ProjectRole>(ProjectRole.MEMBER);
+  const [selectedRole, setSelectedRole] = useState<ProjectRole>(
+    ProjectRole.MEMBER
+  );
   const [editingRoleFor, setEditingRoleFor] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const isCreator = currentUserId === projectCreatorId;
+  const permissions = usePermissions({ userRole });
+
+  const addToast = (toast: Omit<Toast, "id">) => {
+    const id = Date.now().toString();
+    setToasts((prev) => [...prev, { ...toast, id }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -64,6 +80,8 @@ export const MemberManagementModal = ({
       setSearchResults([]);
     }
   }, [searchQuery]);
+
+  console.log("memberssss", members);
 
   const fetchMembers = async () => {
     try {
@@ -101,7 +119,11 @@ export const MemberManagementModal = ({
       setActiveTab("members");
     } catch (error: any) {
       console.error("Failed to add member:", error);
-      alert(error.response?.data?.message || "Failed to add member");
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to add member",
+        type: "error",
+      });
     }
   };
 
@@ -112,7 +134,11 @@ export const MemberManagementModal = ({
       setEditingRoleFor(null);
     } catch (error: any) {
       console.error("Failed to update role:", error);
-      alert(error.response?.data?.message || "Failed to update role");
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to update role",
+        type: "error",
+      });
     }
   };
 
@@ -124,6 +150,11 @@ export const MemberManagementModal = ({
       await fetchMembers();
     } catch (error: any) {
       console.error("Failed to remove member:", error);
+      addToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to remove member",
+        type: "error",
+      });
     }
   };
 
@@ -152,33 +183,35 @@ export const MemberManagementModal = ({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg w-[90%] max-w-[600px] max-h-[80vh] flex flex-col shadow-xl"
+        className="bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="m-0 text-xl font-semibold text-gray-900 dark:text-white">Manage Members</h2>
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h2 className="m-0 text-xl font-semibold text-gray-900">
+            Manage Members
+          </h2>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="flex border-b border-gray-200">
           <button
             onClick={() => setActiveTab("members")}
             className={`flex-1 px-3 py-3 border-none bg-transparent cursor-pointer text-sm transition-colors ${
               activeTab === "members"
                 ? "font-semibold border-b-2 border-blue-500 text-blue-500"
-                : "font-normal text-gray-600 dark:text-gray-400"
+                : "font-normal text-gray-600"
             }`}
           >
             Members ({members.length})
           </button>
-          {isCreator && (
+          {permissions.canManageMembers && (
             <button
               onClick={() => setActiveTab("add")}
               className={`flex-1 px-3 py-3 border-none bg-transparent cursor-pointer text-sm transition-colors ${
                 activeTab === "add"
                   ? "font-semibold border-b-2 border-blue-500 text-blue-500"
-                  : "font-normal text-gray-600 dark:text-gray-400"
+                  : "font-normal text-gray-600"
               }`}
             >
               Add Members
@@ -193,23 +226,24 @@ export const MemberManagementModal = ({
               {members.map((member) => {
                 const isMemberCreator = member.user._id === createdBy?._id;
                 const isEditingRole = editingRoleFor === member.user._id;
-                
+
                 return (
                   <div
                     key={member.user._id}
-                    className="flex justify-between items-center px-3 py-3 border-b border-gray-100 dark:border-gray-700"
+                    className="flex justify-between items-center px-3 py-3 border-b border-gray-100"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900 dark:text-white">
+                        <span className="font-medium text-gray-900">
                           {member.user.name}
                         </span>
                         {isMemberCreator ? (
-                          <span 
+                          <span
                             className="px-2 py-0.5 text-xs font-semibold rounded"
-                            style={{ 
-                              backgroundColor: getRoleColor(ProjectRole.OWNER) + '20',
-                              color: getRoleColor(ProjectRole.OWNER)
+                            style={{
+                              backgroundColor:
+                                getRoleColor(ProjectRole.OWNER) + "20",
+                              color: getRoleColor(ProjectRole.OWNER),
                             }}
                           >
                             {getRoleDisplayName(ProjectRole.OWNER)}
@@ -217,54 +251,65 @@ export const MemberManagementModal = ({
                         ) : isEditingRole ? (
                           <select
                             value={member.role}
-                            onChange={(e) => handleUpdateRole(member.user._id, e.target.value as ProjectRole)}
-                            className="px-2 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onChange={(e) =>
+                              handleUpdateRole(
+                                member.user._id,
+                                e.target.value as ProjectRole
+                              )
+                            }
+                            className="px-2 py-0.5 text-xs border border-gray-300"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            {Object.values(ProjectRole).filter(r => r !== ProjectRole.OWNER).map((role) => (
-                              <option key={role} value={role}>
-                                {getRoleDisplayName(role)}
-                              </option>
-                            ))}
+                            {Object.values(ProjectRole)
+                              .filter((r) => r !== ProjectRole.OWNER)
+                              .map((role) => (
+                                <option key={role} value={role}>
+                                  {getRoleDisplayName(role)}
+                                </option>
+                              ))}
                           </select>
                         ) : (
-                          <span 
+                          <span
                             className="px-2 py-0.5 text-xs font-semibold rounded cursor-pointer hover:opacity-80"
-                            style={{ 
-                              backgroundColor: getRoleColor(member.role) + '20',
-                              color: getRoleColor(member.role)
+                            style={{
+                              backgroundColor: getRoleColor(member.role) + "20",
+                              color: getRoleColor(member.role),
                             }}
-                            onClick={() => isCreator && setEditingRoleFor(member.user._id)}
-                            title={isCreator ? "Click to change role" : ""}
+                            onClick={() =>
+                              permissions.canManageRoles && setEditingRoleFor(member.user._id)
+                            }
+                            title={permissions.canManageRoles ? "Click to change role" : ""}
                           >
                             {getRoleDisplayName(member.role)}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                      <div className="text-xs text-gray-600">
                         {member.user.email}
                       </div>
                     </div>
 
-                    {isCreator && !isMemberCreator && (
+                    {permissions.canManageMembers && !isMemberCreator && (
                       <div className="flex gap-2">
                         {isEditingRole && (
                           <button
                             onClick={() => setEditingRoleFor(null)}
-                            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="px-3 py-1.5 border border-gray-300"
                           >
                             Cancel
                           </button>
                         )}
                         <button
-                          onClick={() => handleTransferOwnership(member.user._id)}
-                          className="px-3 py-1.5 border border-blue-500 rounded bg-white dark:bg-gray-800 text-blue-500 cursor-pointer text-xs hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                          onClick={() =>
+                            handleTransferOwnership(member.user._id)
+                          }
+                          className="px-3 py-1.5 border border-blue-500 rounded bg-white"
                         >
                           Make Owner
                         </button>
                         <button
                           onClick={() => handleRemoveMember(member.user._id)}
-                          className="px-3 py-1.5 border border-red-500 rounded bg-white dark:bg-gray-800 text-red-500 cursor-pointer text-xs hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                          className="px-3 py-1.5 border border-red-500 rounded bg-white"
                         >
                           Remove
                         </button>
@@ -277,19 +322,23 @@ export const MemberManagementModal = ({
           ) : (
             <div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700">
                   Select Role for New Member
                 </label>
                 <select
                   value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as ProjectRole)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+                  onChange={(e) =>
+                    setSelectedRole(e.target.value as ProjectRole)
+                  }
+                  className="w-full px-3 py-2 border border-gray-300"
                 >
-                  {Object.values(ProjectRole).filter(r => r !== ProjectRole.OWNER).map((role) => (
-                    <option key={role} value={role}>
-                      {getRoleDisplayName(role)} - {getRoleDescription(role)}
-                    </option>
-                  ))}
+                  {Object.values(ProjectRole)
+                    .filter((r) => r !== ProjectRole.OWNER)
+                    .map((role) => (
+                      <option key={role} value={role}>
+                        {getRoleDisplayName(role)} - {getRoleDescription(role)}
+                      </option>
+                    ))}
                 </select>
 
                 <input
@@ -297,27 +346,31 @@ export const MemberManagementModal = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name or email..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300"
                 />
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                <p className="text-xs text-gray-600">
                   Type at least 2 characters to search
                 </p>
               </div>
 
-              {loading && <p className="text-center text-gray-600 dark:text-gray-400">Searching...</p>}
+              {loading && (
+                <p className="text-center text-gray-600">
+                  Searching...
+                </p>
+              )}
 
               {searchResults.length > 0 && (
                 <div>
                   {searchResults.map((user) => (
                     <div
                       key={user._id}
-                      className="flex justify-between items-center px-3 py-3 border-b border-gray-100 dark:border-gray-700"
+                      className="flex justify-between items-center px-3 py-3 border-b border-gray-100"
                     >
                       <div>
-                        <div className="font-medium mb-1 text-gray-900 dark:text-white">
+                        <div className="font-medium mb-1 text-gray-900">
                           {user.name}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                        <div className="text-xs text-gray-600">
                           {user.email}
                         </div>
                       </div>
@@ -332,25 +385,30 @@ export const MemberManagementModal = ({
                 </div>
               )}
 
-              {!loading && searchQuery.length >= 2 && searchResults.length === 0 && (
-                <p className="text-center text-gray-600 dark:text-gray-400">
-                  No users found
-                </p>
-              )}
+              {!loading &&
+                searchQuery.length >= 2 &&
+                searchResults.length === 0 && (
+                  <p className="text-center text-gray-600">
+                    No users found
+                  </p>
+                )}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+        <div className="px-6 py-4 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-pointer text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            className="px-5 py-2.5 border border-gray-300"
           >
             Close
           </button>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastNotification toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };

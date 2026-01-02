@@ -49,3 +49,19 @@ export const getProjectStats = async (projectId: string) => {
   const response = await api.get(`/projects/${projectId}/stats`);
   return response.data;
 };
+
+export const updateProject = async (
+  projectId: string,
+  data: {
+    name?: string;
+    description?: string;
+  }
+) => {
+  const response = await api.patch(`/projects/${projectId}`, data);
+  return response.data;
+};
+
+export const deleteProject = async (projectId: string) => {
+  const response = await api.delete(`/projects/${projectId}`);
+  return response.data;
+};

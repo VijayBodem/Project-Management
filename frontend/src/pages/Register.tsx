@@ -38,9 +38,9 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full bg-white">
+        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
           Create Account
         </h2>
 
@@ -49,7 +49,7 @@ const Register = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700">
               Name
             </label>
             <input
@@ -57,13 +57,13 @@ const Register = () => {
               placeholder="Enter your name"
               {...register("name")}
               disabled={loading}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-4 py-3 border border-gray-300"
             />
             <ErrorMessage message={errors.name?.message} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700">
               Email
             </label>
             <input
@@ -71,13 +71,13 @@ const Register = () => {
               placeholder="Enter your email"
               {...register("email")}
               disabled={loading}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-4 py-3 border border-gray-300"
             />
             <ErrorMessage message={errors.email?.message} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <input
@@ -85,7 +85,7 @@ const Register = () => {
               placeholder="Enter your password"
               {...register("password")}
               disabled={loading}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-4 py-3 border border-gray-300"
             />
             <ErrorMessage message={errors.password?.message} />
           </div>
@@ -99,7 +99,7 @@ const Register = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
           <Link
             to="/login"

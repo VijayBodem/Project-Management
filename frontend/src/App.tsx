@@ -55,10 +55,10 @@ function App() {
   };
 
   return (
-    <>
+    <div className="page-container">
       <AppRoutes />
       <ToastNotification toasts={toasts} onRemove={handleRemoveToast} />
-    </>
+    </div>
   );
 }
 

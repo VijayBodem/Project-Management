@@ -116,7 +116,7 @@ export const MyTasks = () => {
   if (loading) {
     return (
       <div className="p-5 text-center">
-        <p className="text-gray-600 dark:text-gray-400">Loading your tasks...</p>
+        <p className="text-gray-600">Loading your tasks...</p>
       </div>
     );
   }
@@ -128,26 +128,26 @@ export const MyTasks = () => {
         <div>
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer text-sm mb-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-4 py-2 border border-gray-300"
           >
             ← Back to Dashboard
           </button>
-          <h1 className="m-0 mb-2 text-3xl font-bold text-gray-900 dark:text-white">My Tasks</h1>
-          <p className="m-0 text-gray-600 dark:text-gray-400">
+          <h1 className="m-0 mb-2 text-3xl font-bold text-gray-900">My Tasks</h1>
+          <p className="m-0 text-gray-600">
             Tasks assigned to you across all projects
           </p>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="mb-5 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <label className="mr-3 text-sm text-gray-700 dark:text-gray-300">
+      <div className="mb-5 p-4 bg-white">
+        <label className="mr-3 text-sm text-gray-700">
           Filter by status:
         </label>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300"
         >
           <option value="all">All Statuses</option>
           <option value="todo">To Do</option>
@@ -157,17 +157,17 @@ export const MyTasks = () => {
       </div>
 
       {/* Task Count */}
-      <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+      <div className="mb-4 text-sm text-gray-600">
         {tasks.length} {tasks.length === 1 ? "task" : "tasks"} assigned to you
       </div>
 
       {/* Tasks List */}
       {tasks.length === 0 ? (
-        <div className="text-center py-15 px-5 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h3 className="m-0 mb-3 text-gray-600 dark:text-gray-400 text-lg">
+        <div className="text-center py-15 px-5 bg-gray-50">
+          <h3 className="m-0 mb-3 text-gray-600">
             No tasks assigned
           </h3>
-          <p className="m-0 text-gray-500 dark:text-gray-500">
+          <p className="m-0 text-gray-500">
             You don't have any tasks assigned to you yet
           </p>
         </div>
@@ -176,7 +176,7 @@ export const MyTasks = () => {
           {tasks.map((task) => (
             <div
               key={task._id}
-              className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:shadow-md transition-shadow"
+              className="p-4 bg-white"
               onClick={() => {
                 const projectId =
                   typeof task.project === "string"
@@ -187,15 +187,15 @@ export const MyTasks = () => {
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
-                  <h3 className="m-0 mb-2 text-base font-semibold text-gray-900 dark:text-white">
+                  <h3 className="m-0 mb-2 text-base font-semibold text-gray-900">
                     {task.title}
                   </h3>
                   {task.description && (
-                    <p className="m-0 mb-2 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="m-0 mb-2 text-sm text-gray-600">
                       {task.description}
                     </p>
                   )}
-                  <div className="text-xs text-gray-500 dark:text-gray-500">
+                  <div className="text-xs text-gray-500">
                     Project:{" "}
                     {typeof task.project === "string"
                       ? task.project
@@ -219,7 +219,7 @@ export const MyTasks = () => {
                       handleStatusChange(task._id, e.target.value);
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-2 py-1 border border-gray-300"
                   >
                     <option value="todo">To Do</option>
                     <option value="in-progress">In Progress</option>

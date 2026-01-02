@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createProjectSchema, type CreateProjectInput } from "../schemas/validation";
@@ -8,9 +8,19 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: { name: string; description?: string }) => void;
+  initialData?: { name: string; description?: string };
+  title?: string;
+  submitButtonText?: string;
 }
 
-export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
+export const CreateProjectModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  title = "Create New Project",
+  submitButtonText = "Create Project"
+}: Props) => {
   const [loading, setLoading] = useState(false);
 
   const {
@@ -21,6 +31,13 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
   } = useForm<CreateProjectInput>({
     resolver: zodResolver(createProjectSchema),
   });
+
+  // Reset form with initialData when modal opens or initialData changes
+  useEffect(() => {
+    if (isOpen && initialData) {
+      reset(initialData);
+    }
+  }, [isOpen, initialData, reset]);
 
   if (!isOpen) return null;
 
@@ -48,16 +65,16 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
       onClick={handleClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[90%] max-w-[500px] shadow-xl"
+        className="bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-5 text-gray-900 dark:text-white">
-          Create New Project
+        <h2 className="text-xl font-semibold mb-5 text-gray-900">
+          {title}
         </h2>
 
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <div className="mb-4">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Project Name *
             </label>
             <input
@@ -65,13 +82,13 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
               {...register("name")}
               placeholder="Enter project name"
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             />
             <ErrorMessage message={errors.name?.message} />
           </div>
 
           <div className="mb-5">
-            <label className="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block mb-1.5 text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -79,7 +96,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
               placeholder="Enter project description (optional)"
               rows={4}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-y disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300"
             />
             <ErrorMessage message={errors.description?.message} />
           </div>
@@ -89,7 +106,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2.5 border border-gray-300"
             >
               Cancel
             </button>
@@ -98,7 +115,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onSubmit }: Props) => {
               disabled={loading}
               className="px-5 py-2.5 border-none rounded bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "Creating..." : "Create Project"}
+              {loading ? "Saving..." : submitButtonText}
             </button>
           </div>
         </form>
