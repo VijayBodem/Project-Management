@@ -11,11 +11,17 @@ export const register = async (req: Request, res: Response) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser)
-    return res.status(400).json({ success: false, message: "User already exists" });
+    return res
+      .status(400)
+      .json({ success: false, message: "User already exists" });
 
   const user = await User.create({ name, email, password });
 
-  const payload = { userId: user._id.toString(), role: user.role, name: user.name };
+  const payload = {
+    userId: user._id.toString(),
+    role: user.role,
+    name: user.name,
+  };
 
   const refreshToken = generateRefreshToken(payload);
 
@@ -43,12 +49,16 @@ export const login = async (req: Request, res: Response) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(400).json({ success: false, message: "Invalid credentials" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid credentials" });
   }
 
   // Check if account is locked
   if (user.isLocked()) {
-    const lockTimeRemaining = Math.ceil((user.lockUntil!.getTime() - Date.now()) / 1000 / 60);
+    const lockTimeRemaining = Math.ceil(
+      (user.lockUntil!.getTime() - Date.now()) / 1000 / 60
+    );
     return res.status(423).json({
       success: false,
       message: `Account is locked due to too many failed login attempts. Please try again in ${lockTimeRemaining} minutes.`,
@@ -60,23 +70,30 @@ export const login = async (req: Request, res: Response) => {
   if (!isMatch) {
     // Increment login attempts
     await user.incLoginAttempts();
-    
+
     // Check if account is now locked
     const updatedUser = await User.findById(user._id);
     if (updatedUser?.isLocked()) {
       return res.status(423).json({
         success: false,
-        message: "Account locked due to too many failed login attempts. Please try again in 2 hours.",
+        message:
+          "Account locked due to too many failed login attempts. Please try again in 2 hours.",
       });
     }
 
-    return res.status(400).json({ success: false, message: "Invalid credentials" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid credentials" });
   }
 
   // Reset login attempts on successful login
   await user.resetLoginAttempts();
 
-  const payload = { userId: user._id.toString(), role: user.role, name: user.name };
+  const payload = {
+    userId: user._id.toString(),
+    role: user.role,
+    name: user.name,
+  };
 
   const refreshToken = generateRefreshToken(payload);
 

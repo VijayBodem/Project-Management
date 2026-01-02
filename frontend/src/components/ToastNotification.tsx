@@ -35,7 +35,7 @@ const ToastItem = ({
     const timer = setTimeout(() => {
       setIsExiting(true);
       setTimeout(() => onRemove(toast.id), 300);
-    }, 5000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [toast.id, onRemove]);
@@ -56,7 +56,9 @@ const ToastItem = ({
   return (
     <div
       className={`${getToastClasses()} text-white p-4 rounded-lg shadow-lg flex justify-between items-start gap-3 min-w-[300px] ${
-        isExiting ? "animate-[slideOut_0.3s_ease-out]" : "animate-[slideIn_0.3s_ease-out]"
+        isExiting
+          ? "animate-[slideOut_0.3s_ease-out]"
+          : "animate-[slideIn_0.3s_ease-out]"
       }`}
     >
       <div className="flex-1">

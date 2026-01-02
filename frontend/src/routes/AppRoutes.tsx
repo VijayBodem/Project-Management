@@ -14,7 +14,14 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/projects/:projectId" element={<ProjectBoard />} />
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <ProjectBoard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

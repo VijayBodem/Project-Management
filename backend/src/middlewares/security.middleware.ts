@@ -6,10 +6,11 @@ import { Request, Response, NextFunction } from "express";
 // Rate limiting for authentication endpoints
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 50, // Limit each IP to 5 requests per windowMs
   message: {
     success: false,
-    message: "Too many authentication attempts, please try again after 15 minutes",
+    message:
+      "Too many authentication attempts, please try again after 15 minutes",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -19,7 +20,7 @@ export const authLimiter = rateLimit({
 // Rate limiting for general API endpoints
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10000, // Limit each IP to 100 requests per windowMs
+  max: 10000, // Limit each IP to 1000 requests per windowMs
   message: {
     success: false,
     message: "Too many requests, please try again later",
@@ -65,7 +66,11 @@ export const sanitizeData = mongoSanitize({
 });
 
 // Custom XSS protection middleware (since xss-clean is deprecated)
-export const xssProtection = (req: Request, res: Response, next: NextFunction) => {
+export const xssProtection = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const sanitizeValue = (value: any): any => {
     if (typeof value === "string") {
       // Remove script tags and event handlers
@@ -88,7 +93,7 @@ export const xssProtection = (req: Request, res: Response, next: NextFunction) =
   };
 
   // Only sanitize body (which is mutable)
-  if (req.body && typeof req.body === 'object') {
+  if (req.body && typeof req.body === "object") {
     req.body = sanitizeValue(req.body);
   }
 
@@ -99,7 +104,11 @@ export const xssProtection = (req: Request, res: Response, next: NextFunction) =
 };
 
 // HTTP Parameter Pollution protection
-export const hppProtection = (req: Request, res: Response, next: NextFunction) => {
+export const hppProtection = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Note: In newer Express versions, req.query is read-only
   // HPP protection is less critical for modern applications
   // The main protection comes from proper input validation in controllers
@@ -107,7 +116,11 @@ export const hppProtection = (req: Request, res: Response, next: NextFunction) =
 };
 
 // CSRF token validation middleware
-export const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
+export const csrfProtection = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Skip CSRF for GET, HEAD, OPTIONS
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
     return next();
