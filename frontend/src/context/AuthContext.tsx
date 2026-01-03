@@ -59,7 +59,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (accessToken: string, refreshToken: string) => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
-    connectSocket();
     setIsAuthenticated(true);
 
     // Trigger auth change event for components that need to react to login

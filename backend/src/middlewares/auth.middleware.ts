@@ -30,7 +30,7 @@ export const authenticate = (
 
   try {
     const decoded = jwt.verify(token, env.jwtAccessSecret) as JwtPayload;
-    console.log("Decodedddd", decoded);
+    // console.log("Decodedddd", decoded);
 
     // Attach user info to request
     req.user = decoded;

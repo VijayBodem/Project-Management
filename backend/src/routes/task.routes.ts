@@ -99,6 +99,29 @@ router.post(
       await notifyTaskCreation(populatedTask as any, req.user!.userId);
     }
 
+    // Emit task:assigned events to assigned users for real-time MyTasks updates
+    if (
+      populatedTask &&
+      populatedTask.assignedTo &&
+      populatedTask.assignedTo.length > 0
+    ) {
+      const assignedUserIds = populatedTask.assignedTo.map((user: any) =>
+        user._id.toString()
+      );
+
+      // Emit to individual assigned users (exclude creator to avoid duplicate events)
+      for (const userId of assignedUserIds) {
+        if (userId !== req.user!.userId) {
+          emitToUser(userId, "task:assigned", {
+            task: populatedTask,
+            assignedBy: req.user!.userId,
+            addedAssignees: assignedUserIds,
+            removedAssignees: [],
+          });
+        }
+      }
+    }
+
     res.status(201).json(populatedTask);
   })
 );
@@ -627,6 +650,10 @@ router.patch(
     // Track changes for activity log
     const changes: any = {};
 
+    // Declare assignee tracking variables in outer scope
+    let addedAssignees: string[] = [];
+    let removedAssignees: string[] = [];
+
     if (title && title !== task.title) {
       changes.title = { from: task.title, to: title };
       task.title = title;
@@ -690,10 +717,10 @@ router.patch(
       const previousAssignees = (task.assignedTo || []).map((id: any) =>
         id.toString()
       );
-      const addedAssignees = assignedTo.filter(
+      addedAssignees = assignedTo.filter(
         (id: string) => !previousAssignees.includes(id)
       );
-      const removedAssignees = previousAssignees.filter(
+      removedAssignees = previousAssignees.filter(
         (id: string) => !assignedTo.includes(id)
       );
 
@@ -746,6 +773,40 @@ router.patch(
       updatedBy: req.user!.userId,
       field: "details",
     });
+
+    // If assignees were changed, emit task:assigned events to individual users for MyTasks updates
+    if (
+      assignedTo !== undefined &&
+      (addedAssignees.length > 0 || removedAssignees.length > 0)
+    ) {
+      // Emit to added assignees
+      for (const userId of addedAssignees) {
+        emitToUser(userId, "task:assigned", {
+          task: updatedTask,
+          assignedBy: req.user!.userId,
+          addedAssignees,
+          removedAssignees,
+        });
+      }
+
+      // Emit to removed assignees
+      for (const userId of removedAssignees) {
+        emitToUser(userId, "task:assigned", {
+          task: updatedTask,
+          assignedBy: req.user!.userId,
+          addedAssignees,
+          removedAssignees,
+        });
+      }
+
+      // Notify about assignment changes
+      await notifyTaskAssignment(
+        updatedTask as any,
+        req.user!.userId,
+        addedAssignees,
+        removedAssignees
+      );
+    }
 
     res.json(updatedTask);
   })
@@ -804,6 +865,39 @@ router.delete(
       taskId,
       deletedBy: req.user!.userId,
     });
+
+    // Emit to assigned users for MyTasks page updates
+    if (task.assignedTo && task.assignedTo.length > 0) {
+      for (const assignee of task.assignedTo) {
+        const assigneeId = assignee.toString();
+        if (assigneeId !== req.user!.userId) {
+          // Don't emit to the deleter
+          emitToUser(assigneeId, "task:deleted", {
+            taskId,
+            deletedBy: req.user!.userId,
+          });
+        }
+      }
+    }
+
+    // Notify assigned users about task deletion
+    const populatedTask = await Task.findById(taskId)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    if (
+      populatedTask &&
+      populatedTask.assignedTo &&
+      populatedTask.assignedTo.length > 0
+    ) {
+      await notifyTaskStatusChange({
+        task: populatedTask as any,
+        actorId: req.user!.userId,
+        type: NotificationType.TASK_COMPLETED, // Reusing for deletions
+        title: "Task Deleted",
+        message: `Task deleted: ${populatedTask.title}`,
+      });
+    }
 
     res.json({ success: true, message: "Task deleted successfully" });
   })

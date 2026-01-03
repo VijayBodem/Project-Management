@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,7 +61,7 @@ InputField.displayName = "InputField";
 
 const Login = memo(() => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   // Unified state management using discriminated union
   const [loginState, setLoginState] = useState<LoginState>({ status: "idle" });
@@ -89,6 +89,10 @@ const Login = memo(() => {
     },
     [login, navigate]
   );
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">

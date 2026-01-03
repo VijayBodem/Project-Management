@@ -73,12 +73,12 @@ export const KanbanBoard = ({
                           'bg-green-500'
                         }`} />
                         <h3 className="text-lg font-semibold text-slate-900">
-                          {col.label}
-                        </h3>
+                      {col.label}
+                    </h3>
                       </div>
                       <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-sm font-medium">
-                        {columnTasks.length}
-                      </span>
+                      {columnTasks.length}
+                    </span>
                     </div>
                   </div>
 
@@ -101,15 +101,15 @@ export const KanbanBoard = ({
                                 snapshot.isDragging ? 'rotate-2 shadow-2xl' : ''
                               }`}
                             >
-                              <TaskCard
-                                task={task}
-                                members={members}
-                                onAssign={onAssign}
-                                onDelete={onDelete}
-                                onOpenDetails={onOpenDetails}
-                                provided={provided}
-                                canDeleteTask={canDeleteTask}
-                              />
+                            <TaskCard
+                              task={task}
+                              members={members}
+                              onAssign={onAssign}
+                              onDelete={onDelete}
+                              onOpenDetails={onOpenDetails}
+                              provided={provided}
+                              canDeleteTask={canDeleteTask}
+                            />
                             </div>
                           )}
                         </Draggable>

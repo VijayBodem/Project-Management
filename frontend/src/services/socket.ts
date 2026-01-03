@@ -2,40 +2,72 @@ import { io, Socket } from "socket.io-client";
 import { getAccessToken } from "../utils/token";
 
 let socket: Socket | null = null;
+let isConnecting = false;
 
 export const connectSocket = () => {
+  // If already connected, return existing socket
+  if (socket?.connected) {
+    console.log("🔌 Socket already connected, returning existing connection");
+    return socket;
+  }
+
+  // If currently connecting, wait for connection to complete
+  if (isConnecting && socket) {
+    console.log("🔌 Socket connection in progress, returning existing instance");
+    return socket;
+  }
+
   const token = getAccessToken();
 
-  console.log("token", token);
+  console.log("🔌 Creating new socket connection", { token: !!token });
 
-  socket = io(import.meta.env.VITE_API_SOCKET_URL, {
+  isConnecting = true;
+
+  socket = io(import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000", {
     auth: { token },
+    autoConnect: true,
   });
 
   socket.on("connect", () => {
     console.log("🔌 Socket connected:", socket?.id);
+    isConnecting = false;
     socket?.emit("socket:ready");
   });
 
   socket.on("disconnect", () => {
     console.log("❌ Socket disconnected");
+    isConnecting = false;
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error("❌ Socket connection error:", error);
+    isConnecting = false;
   });
 
   return socket;
 };
 
 export const disconnectSocket = () => {
-  socket?.disconnect();
-  socket = null;
+  if (socket) {
+    console.log("🔌 Disconnecting socket");
+    socket.disconnect();
+    socket = null;
+    isConnecting = false;
+  }
 };
 
 export const getSocket = () => {
   if (!socket) {
+    console.log("🔌 Creating socket instance (not connecting)");
     socket = io(import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000", {
       autoConnect: false,
     });
   }
   return socket;
+};
+
+export const isSocketConnected = () => {
+  return socket?.connected || false;
 };
 
 export const listenToNotifications = (callback: (data: any) => void) => {

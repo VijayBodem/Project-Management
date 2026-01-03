@@ -150,35 +150,35 @@ const Register = memo(() => {
               </svg>
             </div>
             <h1 className="text-2xl font-bold mb-2">
-              Create Account
+            Create Account
             </h1>
             <p className="text-green-100">Join us to start managing your projects</p>
-          </div>
+        </div>
 
           {/* Form Section */}
           <div className="px-8 py-8">
 
-            {/* Conditional rendering of alerts based on form state */}
-            {(formState.status === "error" || formState.status === "success") && (
-              <div className="mb-6">
-                {formState.status === "error" && (
-                  <ErrorAlert
-                    message={formState.message}
-                    onClose={() => setFormState({ status: "idle" })}
-                  />
-                )}
-                {formState.status === "success" && (
-                  <SuccessAlert message={formState.message} />
-                )}
-              </div>
+        {/* Conditional rendering of alerts based on form state */}
+        {(formState.status === "error" || formState.status === "success") && (
+          <div className="mb-6">
+            {formState.status === "error" && (
+              <ErrorAlert
+                message={formState.message}
+                onClose={() => setFormState({ status: "idle" })}
+              />
             )}
+            {formState.status === "success" && (
+              <SuccessAlert message={formState.message} />
+            )}
+          </div>
+        )}
 
-            {/* Registration form with validation and accessibility features */}
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-6"
-              noValidate // Disable native HTML5 validation in favor of React Hook Form
-            >
+        {/* Registration form with validation and accessibility features */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+          noValidate // Disable native HTML5 validation in favor of React Hook Form
+        >
           <InputField
             label="Full Name"
             type="text"
@@ -209,30 +209,30 @@ const Register = memo(() => {
             disabled={formState.status === "loading"}
           />
 
-              <button
-                type="submit"
-                disabled={formState.status === "loading"}
+          <button
+            type="submit"
+            disabled={formState.status === "loading"}
                 className="w-full flex justify-center items-center py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-sm hover:shadow-lg"
-              >
-                {formState.status === "loading" ? (
+          >
+            {formState.status === "loading" ? (
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Creating Account...</span>
                   </div>
-                ) : (
-                  "Create Account"
-                )}
-              </button>
-            </form>
+            ) : (
+              "Create Account"
+            )}
+          </button>
+        </form>
 
             <div className="text-center pt-8 border-t border-slate-100 mt-8">
               <span className="text-slate-600">Already have an account? </span>
-              <Link
-                to="/login"
+            <Link
+              to="/login"
                 className="text-green-600 hover:text-green-700 font-semibold transition-colors duration-200"
-              >
-                Sign in here
-              </Link>
+            >
+              Sign in here
+            </Link>
             </div>
           </div>
         </div>

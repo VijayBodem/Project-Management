@@ -21,36 +21,28 @@ function App() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+    // Listen for real-time notifications using the centralized socket connection
+    const socket = getSocket();
 
-    if (token) {
-      const socket = getSocket();
+    const handleNewNotification = (data: { notification: Notification; task: any }) => {
+      console.log("📬 New notification received in App:", data);
 
-      socket.auth = { token };
-      socket.connect();
-
-      // Listen for real-time notifications
-      socket.on(
-        "notification:new",
-        (data: { notification: Notification; task: any }) => {
-          console.log("📬 New notification received in App:", data);
-
-          // Show toast notification
-          const toast: Toast = {
-            id: data.notification._id,
-            title: data.notification.title,
-            message: data.notification.message,
-            type: getToastType(data.notification.type),
-          };
-
-          setToasts((prev) => [...prev, toast]);
-        }
-      );
-
-      return () => {
-        socket.off("notification:new");
+      // Show toast notification
+      const toast: Toast = {
+        id: data.notification._id,
+        title: data.notification.title,
+        message: data.notification.message,
+        type: getToastType(data.notification.type),
       };
-    }
+
+      setToasts((prev) => [...prev, toast]);
+    };
+
+    socket.on("notification:new", handleNewNotification);
+
+    return () => {
+      socket.off("notification:new", handleNewNotification);
+    };
   }, []);
 
   const handleRemoveToast = (id: string) => {

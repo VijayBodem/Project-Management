@@ -82,6 +82,7 @@ export const ProjectBoard = () => {
   // Real-time task updates using hook
   useTaskRealtime({
     projectId,
+    userId: currentUserId,
     onTaskCreated: (task) => {
       console.log("✨ Task created:", task);
       setTasks((prev) => [task, ...prev]);
