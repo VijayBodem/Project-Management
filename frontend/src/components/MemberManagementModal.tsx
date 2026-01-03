@@ -10,11 +10,7 @@ import {
   type ProjectMember,
 } from "../services/member.service";
 import { ToastNotification, type Toast } from "./ToastNotification";
-import {
-  ProjectRole,
-  getRoleDisplayName,
-  getRoleColor,
-} from "../types/permissions";
+import { ProjectRole, getRoleDisplayName } from "../types/permissions";
 import { usePermissions } from "../hooks/usePermissions";
 
 // Helper function for role descriptions
@@ -179,231 +175,366 @@ export const MemberManagementModal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]"
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[1000] animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-white"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-slate-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-200">
-          <h2 className="m-0 text-xl font-semibold text-gray-900">
-            Manage Members
-          </h2>
+        <div className="px-8 py-6 border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-slate-900">
+              Manage Members
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-slate-200 bg-slate-50">
           <button
             onClick={() => setActiveTab("members")}
-            className={`flex-1 px-3 py-3 border-none bg-transparent cursor-pointer text-sm transition-colors ${
+            className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
               activeTab === "members"
-                ? "font-semibold border-b-2 border-blue-500 text-blue-500"
-                : "font-normal text-gray-600"
+                ? "text-blue-700 bg-white border-b-2 border-blue-600"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             }`}
           >
             Members ({members.length})
+            {activeTab === "members" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-sm" />
+            )}
           </button>
           {permissions.canManageMembers && (
             <button
               onClick={() => setActiveTab("add")}
-              className={`flex-1 px-3 py-3 border-none bg-transparent cursor-pointer text-sm transition-colors ${
+              className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
                 activeTab === "add"
-                  ? "font-semibold border-b-2 border-blue-500 text-blue-500"
-                  : "font-normal text-gray-600"
+                  ? "text-blue-700 bg-white border-b-2 border-blue-600"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               Add Members
+              {activeTab === "add" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-sm" />
+              )}
             </button>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto">
           {activeTab === "members" ? (
-            <div>
-              {members.map((member) => {
-                const isMemberCreator = member.user._id === createdBy?._id;
-                const isEditingRole = editingRoleFor === member.user._id;
-
-                return (
-                  <div
-                    key={member.user._id}
-                    className="flex justify-between items-center px-3 py-3 border-b border-gray-100"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {member.user.name}
-                        </span>
-                        {isMemberCreator ? (
-                          <span
-                            className="px-2 py-0.5 text-xs font-semibold rounded"
-                            style={{
-                              backgroundColor:
-                                getRoleColor(ProjectRole.OWNER) + "20",
-                              color: getRoleColor(ProjectRole.OWNER),
-                            }}
-                          >
-                            {getRoleDisplayName(ProjectRole.OWNER)}
-                          </span>
-                        ) : isEditingRole ? (
-                          <select
-                            value={member.role}
-                            onChange={(e) =>
-                              handleUpdateRole(
-                                member.user._id,
-                                e.target.value as ProjectRole
-                              )
-                            }
-                            className="px-2 py-0.5 text-xs border border-gray-300"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {Object.values(ProjectRole)
-                              .filter((r) => r !== ProjectRole.OWNER)
-                              .map((role) => (
-                                <option key={role} value={role}>
-                                  {getRoleDisplayName(role)}
-                                </option>
-                              ))}
-                          </select>
-                        ) : (
-                          <span
-                            className="px-2 py-0.5 text-xs font-semibold rounded cursor-pointer hover:opacity-80"
-                            style={{
-                              backgroundColor: getRoleColor(member.role) + "20",
-                              color: getRoleColor(member.role),
-                            }}
-                            onClick={() =>
-                              permissions.canManageRoles && setEditingRoleFor(member.user._id)
-                            }
-                            title={permissions.canManageRoles ? "Click to change role" : ""}
-                          >
-                            {getRoleDisplayName(member.role)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {member.user.email}
-                      </div>
-                    </div>
-
-                    {permissions.canManageMembers && !isMemberCreator && (
-                      <div className="flex gap-2">
-                        {isEditingRole && (
-                          <button
-                            onClick={() => setEditingRoleFor(null)}
-                            className="px-3 py-1.5 border border-gray-300"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                        <button
-                          onClick={() =>
-                            handleTransferOwnership(member.user._id)
-                          }
-                          className="px-3 py-1.5 border border-blue-500 rounded bg-white"
-                        >
-                          Make Owner
-                        </button>
-                        <button
-                          onClick={() => handleRemoveMember(member.user._id)}
-                          className="px-3 py-1.5 border border-red-500 rounded bg-white"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Select Role for New Member
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) =>
-                    setSelectedRole(e.target.value as ProjectRole)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300"
-                >
-                  {Object.values(ProjectRole)
-                    .filter((r) => r !== ProjectRole.OWNER)
-                    .map((role) => (
-                      <option key={role} value={role}>
-                        {getRoleDisplayName(role)} - {getRoleDescription(role)}
-                      </option>
-                    ))}
-                </select>
-
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="w-full px-3 py-2 border border-gray-300"
-                />
-                <p className="text-xs text-gray-600">
-                  Type at least 2 characters to search
-                </p>
-              </div>
-
-              {loading && (
-                <p className="text-center text-gray-600">
-                  Searching...
-                </p>
-              )}
-
-              {searchResults.length > 0 && (
-                <div>
-                  {searchResults.map((user) => (
-                    <div
-                      key={user._id}
-                      className="flex justify-between items-center px-3 py-3 border-b border-gray-100"
+            <div className="px-8 py-6">
+              {members.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <div>
-                        <div className="font-medium mb-1 text-gray-900">
-                          {user.name}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          {user.email}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleAddMember(user._id)}
-                        className="px-4 py-1.5 border-none rounded bg-blue-500 text-white cursor-pointer text-xs hover:bg-blue-600 transition-colors"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    No members yet
+                  </h3>
+                  <p className="text-slate-600">
+                    Add team members to collaborate on this project
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {members.map((member) => {
+                    const isMemberCreator = member.user._id === createdBy?._id;
+                    const isEditingRole = editingRoleFor === member.user._id;
+
+                    return (
+                      <div
+                        key={member.user._id}
+                        className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors"
                       >
-                        Add as {getRoleDisplayName(selectedRole)}
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-semibold text-blue-700">
+                              {member.user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-slate-900 truncate">
+                                {member.user.name}
+                              </span>
+                              {isMemberCreator && (
+                                <span className="px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700 rounded-full">
+                                  Owner
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-slate-600 truncate">
+                              {member.user.email}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {isEditingRole ? (
+                              <select
+                                value={member.role}
+                                onChange={(e) =>
+                                  handleUpdateRole(
+                                    member.user._id,
+                                    e.target.value as ProjectRole
+                                  )
+                                }
+                                className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {Object.values(ProjectRole)
+                                  .filter((r) => r !== ProjectRole.OWNER)
+                                  .map((role) => (
+                                    <option key={role} value={role}>
+                                      {getRoleDisplayName(role)}
+                                    </option>
+                                  ))}
+                              </select>
+                            ) : (
+                              <span
+                                className={`px-3 py-1 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
+                                  member.role === ProjectRole.ADMIN
+                                    ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                                    : member.role === ProjectRole.MEMBER
+                                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
+                                onClick={() =>
+                                  permissions.canManageRoles &&
+                                  !isMemberCreator &&
+                                  setEditingRoleFor(member.user._id)
+                                }
+                                title={
+                                  permissions.canManageRoles && !isMemberCreator
+                                    ? "Click to change role"
+                                    : ""
+                                }
+                              >
+                                {getRoleDisplayName(member.role)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {permissions.canManageMembers && !isMemberCreator && (
+                          <div className="flex items-center gap-2 ml-4">
+                            {isEditingRole && (
+                              <button
+                                onClick={() => setEditingRoleFor(null)}
+                                className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {/* Transfer Ownership button - Only visible to OWNER */}
+                            {userRole === ProjectRole.OWNER && (
+                              <button
+                                onClick={() =>
+                                  handleTransferOwnership(member.user._id)
+                                }
+                                className="px-3 py-1.5 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all"
+                              >
+                                Transfer Ownership
+                              </button>
+                            )}
+                            <button
+                              onClick={() =>
+                                handleRemoveMember(member.user._id)
+                              }
+                              className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="px-8 py-6">
+              <div className="space-y-6">
+                {/* Role Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-900">
+                    Select Role for New Member
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) =>
+                      setSelectedRole(e.target.value as ProjectRole)
+                    }
+                    className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    {Object.values(ProjectRole)
+                      .filter((r) => r !== ProjectRole.OWNER)
+                      .map((role) => (
+                        <option key={role} value={role}>
+                          {getRoleDisplayName(role)} -{" "}
+                          {getRoleDescription(role)}
+                        </option>
+                      ))}
+                  </select>
+                </div>
 
-              {!loading &&
-                searchQuery.length >= 2 &&
-                searchResults.length === 0 && (
-                  <p className="text-center text-gray-600">
-                    No users found
+                {/* Search Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-900">
+                    Search Users
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by name or email..."
+                      className="w-full pl-4 pr-10 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <svg
+                        className="w-4 h-4 text-slate-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Type at least 2 characters to search
                   </p>
+                </div>
+
+                {/* Loading State */}
+                {loading && (
+                  <div className="text-center py-8">
+                    <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-slate-600">Searching users...</p>
+                  </div>
                 )}
+
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Search Results
+                    </h3>
+                    <div className="space-y-2">
+                      {searchResults.map((user) => (
+                        <div
+                          key={user._id}
+                          className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-blue-700">
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-medium text-slate-900">
+                                {user.name}
+                              </div>
+                              <div className="text-sm text-slate-600">
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleAddMember(user._id)}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-sm hover:shadow-md"
+                          >
+                            Add as {getRoleDisplayName(selectedRole)}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Results */}
+                {!loading &&
+                  searchQuery.length >= 2 &&
+                  searchResults.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                        No users found
+                      </h3>
+                      <p className="text-slate-600">
+                        Try searching with a different name or email
+                      </p>
+                    </div>
+                  )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 border border-gray-300"
-          >
-            Close
-          </button>
+        <div className="px-8 py-6 border-t border-slate-200 bg-slate-50">
+          <div className="flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
 

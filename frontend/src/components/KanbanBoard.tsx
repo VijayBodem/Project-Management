@@ -48,7 +48,7 @@ export const KanbanBoard = ({
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-5 overflow-x-auto">
+      <div className="flex gap-6 overflow-x-auto pb-4">
         {columns.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.id);
           return (
@@ -57,22 +57,33 @@ export const KanbanBoard = ({
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`min-w-[320px] flex-1 rounded-lg p-4 transition-colors ${
+                  className={`min-w-[320px] flex-1 rounded-xl transition-all duration-200 ${
                     snapshot.isDraggingOver
-                      ? "bg-gray-100"
-                      : "bg-gray-50"
-                  }`}
+                      ? "bg-blue-50 border-2 border-blue-200 border-dashed"
+                      : "bg-white border border-slate-200"
+                  } shadow-soft`}
                 >
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="m-0 text-sm font-semibold text-gray-700">
-                      {col.label}
-                    </h3>
-                    <span className="bg-gray-200">
-                      {columnTasks.length}
-                    </span>
+                  {/* Column Header */}
+                  <div className="p-6 border-b border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          col.id === 'todo' ? 'bg-yellow-500' :
+                          col.id === 'in-progress' ? 'bg-blue-500' :
+                          'bg-green-500'
+                        }`} />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          {col.label}
+                        </h3>
+                      </div>
+                      <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-sm font-medium">
+                        {columnTasks.length}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="min-h-[100px]">
+                  {/* Column Content */}
+                  <div className="p-4 min-h-[200px] space-y-3">
                     {columnTasks
                       .sort((a, b) => a.position - b.position)
                       .map((task, index) => (
@@ -81,22 +92,40 @@ export const KanbanBoard = ({
                           index={index}
                           key={task._id}
                         >
-                          {(provided) => (
-                            <TaskCard
-                              task={task}
-                              members={members}
-                              onAssign={onAssign}
-                              onDelete={onDelete}
-                              onOpenDetails={onOpenDetails}
-                              provided={provided}
-                              canDeleteTask={canDeleteTask}
-                            />
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`transform transition-transform ${
+                                snapshot.isDragging ? 'rotate-2 shadow-2xl' : ''
+                              }`}
+                            >
+                              <TaskCard
+                                task={task}
+                                members={members}
+                                onAssign={onAssign}
+                                onDelete={onDelete}
+                                onOpenDetails={onOpenDetails}
+                                provided={provided}
+                                canDeleteTask={canDeleteTask}
+                              />
+                            </div>
                           )}
                         </Draggable>
                       ))}
-                  </div>
 
-                  {provided.placeholder}
+                    {columnTasks.length === 0 && (
+                      <div className="text-center py-8 text-slate-400">
+                        <svg className="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-sm">No tasks</p>
+                      </div>
+                    )}
+
+                    {provided.placeholder}
+                  </div>
                 </div>
               )}
             </Droppable>

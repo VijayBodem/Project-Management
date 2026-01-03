@@ -36,8 +36,11 @@ const InputField = memo(
     errors,
     disabled,
   }: InputFieldProps) => (
-    <div>
-      <label htmlFor={name} className="form-label">
+    <div className="space-y-2">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-slate-900"
+      >
         {label}
       </label>
       <input
@@ -47,7 +50,7 @@ const InputField = memo(
         {...register(name)}
         disabled={disabled}
         aria-describedby={errors[name] ? `${name}-error` : undefined}
-        className="form-input"
+        className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       />
       <ErrorMessage message={errors[name]?.message} />
     </div>
@@ -88,97 +91,92 @@ const Login = memo(() => {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              SkillForge
-            </h1>
-            <h2 className="text-xl font-semibold text-gray-700">
-              Welcome Back
-            </h2>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          {/* Header Section */}
+          <div className="px-8 py-8 text-center bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
+            <p className="text-blue-100">Sign in to your account</p>
           </div>
 
-          {/* Conditional error display */}
-          {loginState.status === "error" && (
-            <div className="mb-6">
-              <ErrorAlert
-                message={loginState.message}
-                onClose={() => setLoginState({ status: "idle" })}
+          {/* Form Section */}
+          <div className="px-8 py-8">
+            {/* Conditional error display */}
+            {loginState.status === "error" && (
+              <div className="mb-6">
+                <ErrorAlert
+                  message={loginState.message}
+                  onClose={() => setLoginState({ status: "idle" })}
+                />
+              </div>
+            )}
+
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+              noValidate
+            >
+              <InputField
+                label="Email Address"
+                type="email"
+                placeholder="Enter your email address"
+                name="email"
+                register={register}
+                errors={errors}
+                disabled={loginState.status === "loading"}
               />
+
+              <InputField
+                label="Password"
+                type="password"
+                placeholder="Enter your password"
+                name="password"
+                register={register}
+                errors={errors}
+                disabled={loginState.status === "loading"}
+              />
+
+              <button
+                type="submit"
+                disabled={loginState.status === "loading"}
+                className="w-full flex justify-center items-center py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow-lg"
+              >
+                {loginState.status === "loading" ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Signing In...</span>
+                  </div>
+                ) : (
+                  "Sign In"
+                )}
+              </button>
+            </form>
+
+            <div className="text-center pt-8 border-t border-slate-100 mt-8">
+              <span className="text-slate-600">Don't have an account? </span>
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200"
+              >
+                Create one here
+              </Link>
             </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6"
-            noValidate
-          >
-            <InputField
-              label="Email Address"
-              type="email"
-              placeholder="Enter your email address"
-              name="email"
-              register={register}
-              errors={errors}
-              disabled={loginState.status === "loading"}
-            />
-
-            <InputField
-              label="Password"
-              type="password"
-              placeholder="Enter your password"
-              name="password"
-              register={register}
-              errors={errors}
-              disabled={loginState.status === "loading"}
-            />
-
-            <button
-              type="submit"
-              disabled={loginState.status === "loading"}
-              className="w-full flex justify-center items-center py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              {loginState.status === "loading" ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing In...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
-
-          <div className="text-center pt-6 border-t border-gray-200 mt-8">
-            <span className="text-gray-600">Don't have an account? </span>
-            <Link
-              to="/register"
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-            >
-              Create one here
-            </Link>
           </div>
         </div>
       </div>

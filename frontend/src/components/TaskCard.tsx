@@ -40,21 +40,6 @@ export const TaskCard = ({
     onAssign(task._id, newSelection);
   };
 
-  const getPriorityClass = (priority?: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-red-500";
-      case "high":
-        return "bg-orange-500";
-      case "medium":
-        return "bg-blue-500";
-      case "low":
-        return "bg-green-500";
-      default:
-        return "bg-gray-400";
-    }
-  };
-
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
 
   return (
@@ -64,118 +49,147 @@ export const TaskCard = ({
       {...provided.dragHandleProps}
       onClick={() => onOpenDetails(task._id)}
       style={provided.draggableProps.style}
-      className="p-3 mb-2 bg-white"
+      className="card p-4 hover:shadow-medium cursor-pointer transition-all duration-200 group"
     >
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex-1 font-medium text-sm text-gray-900">
-          {task.title}
-        </div>
-        {canDeleteTask && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(task._id);
-          }}
-          className="border-none bg-transparent cursor-pointer text-gray-400 hover:text-red-500 text-base px-1 transition-colors"
-          title="Delete task"
-        >
-          ×
-        </button>
-        )}
-      </div>
-
-      {task.description && (
-        <div className="text-xs text-gray-600">
-          {task.description}
-        </div>
-      )}
-
-      {/* Priority and Due Date */}
-      <div className="flex gap-2 mb-2 flex-wrap">
-        {task.priority && (
-          <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold text-white ${getPriorityClass(task.priority)}`}>
-            {task.priority.toUpperCase()}
-          </span>
-        )}
-        {task.dueDate && (
-          <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-            isOverdue ? "bg-red-500 text-white" : "bg-gray-200"
-          }`}>
-            {new Date(task.dueDate).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        )}
-      </div>
-
-      <div className="flex justify-between items-center">
-        <div className="relative">
-          {task.assignedTo && task.assignedTo.length > 0 ? (
-            <div
-              onClick={handleAssignClick}
-              className="flex items-center gap-1 cursor-pointer"
-            >
-              {/* Show up to 3 avatars */}
-              <div className="flex -space-x-2">
-                {task.assignedTo.slice(0, 3).map((assignee, index) => (
-                  <div
-                    key={assignee._id}
-                    className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-semibold border-2 border-white"
-                    style={{ zIndex: 3 - index }}
-                    title={assignee.name}
-                  >
-                    {assignee.name.charAt(0).toUpperCase()}
-                  </div>
-                ))}
-                {task.assignedTo.length > 3 && (
-                  <div
-                    className="w-6 h-6 rounded-full bg-gray-500 text-white flex items-center justify-center text-[9px] font-semibold border-2 border-white"
-                    title={`+${task.assignedTo.length - 3} more`}
-                  >
-                    +{task.assignedTo.length - 3}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
+      <div className="space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors line-clamp-2 flex-1">
+            {task.title}
+          </h4>
+          {canDeleteTask && (
             <button
-              onClick={handleAssignClick}
-              className="px-2 py-1 border border-dashed border-gray-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(task._id);
+              }}
+              className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-all"
+              title="Delete task"
             >
-              Assign
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </button>
           )}
+        </div>
 
-          {showMenu && (
-            <div className="absolute top-full left-0 mt-1 bg-white">
-              <div className="px-3 py-2 border-b border-gray-200">
-                <p className="text-xs font-semibold text-gray-700">
-                  Assign Members ({selectedAssignees.length})
-                </p>
-              </div>
-              {members.map((member) => (
-                <label
-                  key={member.user._id}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedAssignees.includes(member.user._id)}
-                    onChange={() => toggleAssignee(member.user._id)}
-                    className="w-3.5 h-3.5 text-blue-500 border-gray-300"
-                  />
-                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-semibold">
-                    {member.user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-xs text-gray-900">
-                    {member.user.name}
-                  </span>
-                </label>
-              ))}
-            </div>
+        {/* Description */}
+        {task.description && (
+          <p className="text-xs text-slate-600 line-clamp-2">
+            {task.description}
+          </p>
+        )}
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5">
+          {task.priority && (
+            <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide rounded-full ${
+              task.priority === 'low' ? 'bg-green-100 text-green-800 border border-green-200' :
+              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+              task.priority === 'high' ? 'bg-red-100 text-red-800 border border-red-200' :
+              'bg-red-50 text-red-900 border border-red-300'
+            }`}>
+              {task.priority.toUpperCase()}
+            </span>
           )}
+          {task.dueDate && (
+            <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide rounded-full ${
+              isOverdue
+                ? 'bg-red-100 text-red-700 border border-red-200'
+                : 'bg-slate-100 text-slate-700 border border-slate-200'
+            }`}>
+              {new Date(task.dueDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          )}
+        </div>
+
+        {/* Assignees */}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          <div className="relative">
+            {task.assignedTo && task.assignedTo.length > 0 ? (
+              <div
+                onClick={handleAssignClick}
+                className="flex items-center gap-1 cursor-pointer group"
+              >
+                {/* Show up to 3 avatars */}
+                <div className="flex -space-x-1">
+                  {task.assignedTo.slice(0, 3).map((assignee, index) => (
+                    <div
+                      key={assignee._id}
+                      className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-semibold border-2 border-white ring-1 ring-secondary-100"
+                      style={{ zIndex: 3 - index }}
+                      title={assignee.name}
+                    >
+                      {assignee.name.charAt(0).toUpperCase()}
+                    </div>
+                  ))}
+                  {task.assignedTo.length > 3 && (
+                    <div
+                      className="w-6 h-6 rounded-full bg-secondary-400 text-white flex items-center justify-center text-xs font-semibold border-2 border-white ring-1 ring-secondary-100"
+                      title={`+${task.assignedTo.length - 3} more`}
+                    >
+                      +{task.assignedTo.length - 3}
+                    </div>
+                  )}
+                </div>
+                <svg className="w-3 h-3 text-secondary-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+            ) : (
+              <button
+                onClick={handleAssignClick}
+                className="btn btn-ghost btn-sm px-2 py-1 text-xs"
+              >
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Assign
+              </button>
+            )}
+
+            {showMenu && (
+              <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-2xl border border-secondary-200 py-2 z-10 min-w-[200px]">
+                <div className="px-3 py-2 border-b border-secondary-200">
+                  <p className="text-xs font-semibold text-secondary-900">
+                    Assign Members ({selectedAssignees.length})
+                  </p>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {members.map((member) => (
+                    <label
+                      key={member.user._id}
+                      className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-secondary-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedAssignees.includes(member.user._id)}
+                        onChange={() => toggleAssignee(member.user._id)}
+                        className="w-4 h-4 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                      />
+                      <div className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-semibold">
+                        {member.user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm text-secondary-900">
+                        {member.user.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Drag handle */}
+          <div className="text-secondary-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>

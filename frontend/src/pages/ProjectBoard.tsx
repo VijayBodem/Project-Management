@@ -442,204 +442,297 @@ export const ProjectBoard = () => {
     filterAssignee !== "all" || filterStatus !== "all" || showUnassigned;
 
   return (
-    <div className="page-container">
-      <div className="content-container">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 mb-8">
+          <div className="flex items-start gap-6">
             <button
               onClick={() => navigate("/dashboard")}
-              className="btn btn-ghost"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
             >
-              ← Back to Dashboard
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Dashboard
             </button>
-            <div>
-              <h1 className="m-0 mb-1 text-3xl font-bold text-gray-800">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">
                 {projectName || "Project Board"}
               </h1>
               {projectDescription && (
-                <p className="m-0 text-gray-600">{projectDescription}</p>
+                <p className="text-slate-600 text-lg">{projectDescription}</p>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {permissions.canEditProject && (
                 <button
                   onClick={() => setShowEditProjectModal(true)}
-                  className="btn btn-secondary btn-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
                   title="Edit project"
                 >
-                  ✏️ Edit
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit
                 </button>
               )}
               {permissions.canDeleteProject && (
                 <button
                   onClick={handleDeleteProject}
-                  className="btn btn-danger btn-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
                   title="Delete project"
                 >
-                  🗑️ Delete
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Delete
                 </button>
               )}
             </div>
           </div>
 
-        <div className="flex items-center gap-4">
-          {/* Presence Indicator */}
-          <PresenceIndicator viewers={viewers} currentUserId={currentUserId} />
+          <div className="flex items-center gap-6">
+            {/* Presence Indicator */}
+            <PresenceIndicator
+              viewers={viewers}
+              currentUserId={currentUserId}
+            />
 
-          {/* Member Avatars */}
-          <div className="flex items-center gap-2">
-            <div className="flex mr-2">
-              {members.slice(0, 3).map((member, index) => (
-                <div
-                  key={member.user._id}
-                  title={member.user.name}
-                  className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold border-2 border-white"
-                  style={{ marginLeft: index > 0 ? "-8px" : "0" }}
+            {/* Member Avatars and Management */}
+            <div className="flex items-center gap-4">
+              <div className="flex">
+                {members.slice(0, 3).map((member, index) => (
+                  <div
+                    key={member.user._id}
+                    title={member.user.name}
+                    className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold border-2 border-white shadow-sm"
+                    style={{ marginLeft: index > 0 ? "-8px" : "0" }}
+                  >
+                    {member.user.name.charAt(0).toUpperCase()}
+                  </div>
+                ))}
+                {members.length > 3 && (
+                  <div
+                    className="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-semibold border-2 border-white shadow-sm"
+                    style={{ marginLeft: "-8px" }}
+                  >
+                    +{members.length - 3}
+                  </div>
+                )}
+              </div>
+              {permissions.canManageMembers && (
+                <button
+                  onClick={() => setShowMemberModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
                 >
-                  {member.user.name.charAt(0).toUpperCase()}
-                </div>
-              ))}
-              {members.length > 3 && (
-                <div
-                  className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-[11px] font-semibold border-2 border-white"
-                  style={{ marginLeft: "-8px" }}
-                >
-                  +{members.length - 3}
-                </div>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                    />
+                  </svg>
+                  Manage Members
+                </button>
               )}
             </div>
-            {permissions.canManageMembers && (
+          </div>
+        </div>
+
+        {/* Filters and Actions */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700">
+                  Assignee:
+                </label>
+                <select
+                  value={filterAssignee}
+                  onChange={(e) => {
+                    setFilterAssignee(e.target.value);
+                    setShowUnassigned(false);
+                  }}
+                  className="px-4 py-2 text-sm border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="all">All Assignees</option>
+                  {members.map((member) => (
+                    <option key={member.user._id} value={member.user._id}>
+                      {member.user.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-700">
+                  Status:
+                </label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-4 py-2 text-sm border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="todo">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showUnassigned}
+                  onChange={(e) => {
+                    setShowUnassigned(e.target.checked);
+                    if (e.target.checked) setFilterAssignee("all");
+                  }}
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm font-medium text-slate-700">
+                  Unassigned only
+                </span>
+              </label>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            {permissions.canCreateTask && (
               <button
-                onClick={() => setShowMemberModal(true)}
-                className="py-2 px-4 border border-blue-500 rounded bg-white"
+                onClick={() => setShowTaskModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-sm hover:shadow-md"
               >
-                Manage Members
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Create Task
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Filters and Actions */}
-      <div className="flex justify-between items-center mb-5 p-4 bg-white">
-        <div className="flex gap-3 items-center">
-          <select
-            value={filterAssignee}
-            onChange={(e) => {
-              setFilterAssignee(e.target.value);
-              setShowUnassigned(false);
-            }}
-            className="py-2 px-3 border border-gray-300"
-          >
-            <option value="all">All Assignees</option>
-            {members.map((member) => (
-              <option key={member.user._id} value={member.user._id}>
-                {member.user.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="py-2 px-3 border border-gray-300"
-          >
-            <option value="all">All Statuses</option>
-            <option value="todo">To Do</option>
-            <option value="in-progress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
-
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showUnassigned}
-              onChange={(e) => {
-                setShowUnassigned(e.target.checked);
-                if (e.target.checked) setFilterAssignee("all");
-              }}
-              className="cursor-pointer"
-            />
-            <span className="text-sm text-gray-700">
-              Unassigned only
-            </span>
-          </label>
-
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="py-2 px-3 border border-red-500 rounded bg-white"
-            >
-              Clear Filters
-            </button>
-          )}
+        {/* Task Count */}
+        <div className="mb-6 text-sm text-slate-600 bg-slate-50 px-4 py-2 rounded-lg inline-block">
+          Showing {filteredTasks.length} of {tasks.length} tasks
         </div>
 
-        {permissions.canCreateTask && (
-          <button
-            onClick={() => setShowTaskModal(true)}
-            className="py-2.5 px-5 border-none rounded bg-blue-500 text-white cursor-pointer text-sm font-medium hover:bg-blue-600 transition-colors"
-          >
-            + Create Task
-          </button>
-        )}
-      </div>
-
-      {/* Task Count */}
-      <div className="mb-4 text-sm text-gray-600">
-        Showing {filteredTasks.length} of {tasks.length} tasks
-      </div>
-
-      {/* Kanban Board */}
-      <KanbanBoard
-        tasks={filteredTasks}
-        members={members}
-        onStatusChange={handleStatusChange}
-        onAssign={handleAssign}
-        onDelete={handleDelete}
-        onOpenDetails={handleOpenDetails}
-        canDeleteTask={permissions.canDeleteTask}
-      />
-
-      {/* Modals */}
-      <MemberManagementModal
-        isOpen={showMemberModal}
-        onClose={() => setShowMemberModal(false)}
-        projectId={projectId!}
-        userRole={userRole}
-      />
-
-      <CreateTaskModal
-        isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-        onSubmit={handleCreateTask}
-        members={members}
-      />
-
-      {selectedTaskId && (
-        <TaskDetailsModal
-          isOpen={showTaskDetailsModal}
-          onClose={() => {
-            setShowTaskDetailsModal(false);
-            setSelectedTaskId(null);
-          }}
-          taskId={selectedTaskId}
-          currentUserId={currentUserId}
-          userRole={userRole}
+        {/* Kanban Board */}
+        <KanbanBoard
+          tasks={filteredTasks}
           members={members}
-          onTaskUpdate={handleTaskUpdate}
+          onStatusChange={handleStatusChange}
+          onAssign={handleAssign}
+          onDelete={handleDelete}
+          onOpenDetails={handleOpenDetails}
+          canDeleteTask={permissions.canDeleteTask}
         />
-      )}
 
-      <CreateProjectModal
-        isOpen={showEditProjectModal}
-        onClose={() => setShowEditProjectModal(false)}
-        onSubmit={handleEditProject}
-        initialData={{ name: projectName, description: projectDescription }}
-        title="Edit Project"
-        submitButtonText="Update Project"
-      />
+        {/* Modals */}
+        <MemberManagementModal
+          isOpen={showMemberModal}
+          onClose={() => setShowMemberModal(false)}
+          projectId={projectId!}
+          userRole={userRole}
+        />
+
+        <CreateTaskModal
+          isOpen={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          onSubmit={handleCreateTask}
+          members={members}
+        />
+
+        {selectedTaskId && (
+          <TaskDetailsModal
+            isOpen={showTaskDetailsModal}
+            onClose={() => {
+              setShowTaskDetailsModal(false);
+              setSelectedTaskId(null);
+            }}
+            taskId={selectedTaskId}
+            currentUserId={currentUserId}
+            userRole={userRole}
+            members={members}
+            onTaskUpdate={handleTaskUpdate}
+          />
+        )}
+
+        <CreateProjectModal
+          isOpen={showEditProjectModal}
+          onClose={() => setShowEditProjectModal(false)}
+          onSubmit={handleEditProject}
+          initialData={{ name: projectName, description: projectDescription }}
+          title="Edit Project"
+          submitButtonText="Update Project"
+        />
 
         {/* Real-time collaboration features */}
         <CollaborativeCursor cursors={cursors} />

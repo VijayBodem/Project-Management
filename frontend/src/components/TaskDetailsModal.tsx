@@ -250,21 +250,6 @@ export const TaskDetailsModal = ({
     }
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case "urgent":
-        return "#f44336";
-      case "high":
-        return "#ff9800";
-      case "medium":
-        return "#2196f3";
-      case "low":
-        return "#4caf50";
-      default:
-        return "#999";
-    }
-  };
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Not set";
     const date = new Date(dateString);
@@ -305,111 +290,200 @@ export const TaskDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50"
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[1000] animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-white"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-slate-200 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {loading ? (
-          <div className="py-10 text-center text-gray-600">
-            Loading task details...
+          <div className="px-8 py-16">
+            <div className="text-center space-y-4">
+              <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-600">Loading task details...</p>
+            </div>
           </div>
         ) : !task ? (
-          <div className="py-10 text-center text-gray-600">
-            Task not found
+          <div className="px-8 py-16">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto">
+                <svg
+                  className="w-8 h-8 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                Task not found
+              </h3>
+              <p className="text-slate-600">
+                The task you're looking for doesn't exist or has been deleted.
+              </p>
+            </div>
           </div>
         ) : (
           <>
             {/* Header */}
-            <div className="py-5 px-6 border-b border-gray-200">
-              <div className="flex-1">
-                {isEditingTitle ? (
-                  <input
-                    type="text"
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    onBlur={handleSaveTitle}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveTitle();
-                      if (e.key === "Escape") {
-                        setEditedTitle(task.title);
-                        setIsEditingTitle(false);
-                      }
-                    }}
-                    autoFocus
-                    className="w-full text-xl font-semibold border border-blue-500 rounded p-2 bg-white"
+            <div className="px-8 py-6 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div
+                    className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                      task.status === "todo"
+                        ? "bg-yellow-500"
+                        : task.status === "in-progress"
+                        ? "bg-blue-500"
+                        : task.status === "done"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
                   />
-                ) : permissions.canEditTask ? (
-                  <input
-                    type="text"
-                    value={getCurrentValue("title") || ""}
-                    onChange={(e) => handleFieldChange("title", e.target.value)}
-                    className="w-full text-xl p-2 rounded border border-blue-500 bg-white"
-                    placeholder="Task title"
-                  />
-                ) : (
-                  <h2 className="m-0 text-xl p-2 rounded text-gray-900">
-                    {task.title}
-                  </h2>
-                )}
-              </div>
+                  <div className="flex-1 min-w-0">
+                    {isEditingTitle ? (
+                      <input
+                        type="text"
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        onBlur={handleSaveTitle}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveTitle();
+                          if (e.key === "Escape") {
+                            setEditedTitle(task.title);
+                            setIsEditingTitle(false);
+                          }
+                        }}
+                        autoFocus
+                        className="w-full text-2xl font-bold border-2 border-blue-500 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    ) : permissions.canEditTask ? (
+                      <input
+                        type="text"
+                        value={getCurrentValue("title") || ""}
+                        onChange={(e) =>
+                          handleFieldChange("title", e.target.value)
+                        }
+                        className="w-full text-2xl font-bold border-2 border-blue-500 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Task title"
+                      />
+                    ) : (
+                      <h1 className="text-2xl font-bold text-slate-900 line-clamp-2">
+                        {task.title}
+                      </h1>
+                    )}
+                  </div>
+                </div>
 
-              {/* Action buttons */}
-              <div className="flex items-center gap-2">
-                {hasUnsavedChanges && permissions.canEditTask && (
-                  <>
-                    <button
-                      onClick={handleCancelChanges}
-                      className="px-3 py-1.5 border border-gray-300"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveChanges}
-                      className="px-3 py-1.5 border-none rounded bg-blue-500 text-white cursor-pointer text-sm hover:bg-blue-600 transition-colors"
-                    >
-                      Save Changes
-                    </button>
-                  </>
-                )}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span
+                    className={`badge ${
+                      task.status === "todo"
+                        ? "badge-todo"
+                        : task.status === "in-progress"
+                        ? "badge-in-progress"
+                        : task.status === "done"
+                        ? "badge-done"
+                        : "badge-blocked"
+                    }`}
+                  >
+                    {task.status === "todo"
+                      ? "TO DO"
+                      : task.status === "in-progress"
+                      ? "IN PROGRESS"
+                      : task.status === "done"
+                      ? "DONE"
+                      : "BLOCKED"}
+                  </span>
+                  <span
+                    className={`badge ${
+                      task.priority === "low"
+                        ? "priority-low"
+                        : task.priority === "medium"
+                        ? "priority-medium"
+                        : task.priority === "high"
+                        ? "priority-high"
+                        : "priority-urgent"
+                    }`}
+                  >
+                    {task.priority?.toUpperCase()}
+                  </span>
 
-                <button
-                  onClick={onClose}
-                  className="border-none bg-transparent cursor-pointer text-2xl text-gray-500"
-                >
-                  ×
-                </button>
+                  {/* Action buttons */}
+                  {hasUnsavedChanges && permissions.canEditTask && (
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={handleCancelChanges}
+                        className="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveChanges}
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-sm hover:shadow-md"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={onClose}
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-slate-200 bg-slate-50">
               {(["details", "comments", "activity"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-3 px-4 border-none bg-transparent cursor-pointer text-sm capitalize transition-colors ${
+                  className={`px-6 py-4 text-sm font-medium capitalize transition-all relative ${
                     activeTab === tab
-                      ? "font-semibold border-b-2 border-blue-500 text-blue-500"
-                      : "font-normal text-gray-600"
+                      ? "text-blue-700 bg-white border-b-2 border-blue-600"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
                   {tab}
                   {tab === "comments" && ` (${comments.length})`}
+                  {activeTab === tab && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-sm" />
+                  )}
                 </button>
               ))}
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto px-8 py-6">
               {activeTab === "details" && (
                 <TaskDetailsTab
                   task={task}
                   getCurrentValue={getCurrentValue}
                   handleFieldChange={handleFieldChange}
-                  getPriorityColor={getPriorityColor}
                   formatDate={formatDate}
                   permissions={permissions}
                   members={members}
@@ -456,15 +530,14 @@ const TaskDetailsTab = ({
   task,
   getCurrentValue,
   handleFieldChange,
-  getPriorityColor,
   formatDate,
   permissions,
   members,
 }: any) => (
-  <div className="flex flex-col gap-6">
+  <div className="space-y-6">
     {/* Description */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">
         Description
       </label>
       {permissions.canEditTask ? (
@@ -472,20 +545,13 @@ const TaskDetailsTab = ({
           value={getCurrentValue("description") || ""}
           onChange={(e) => handleFieldChange("description", e.target.value)}
           rows={6}
-          className="w-full p-2.5 border border-gray-300"
+          className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
           placeholder="Add a description..."
         />
       ) : (
-        <div
-          className="p-2.5 border border-gray-200"
-          style={{ color: task.description ? undefined : "#999" }}
-        >
+        <div className="px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 min-h-[120px]">
           <span
-            className={
-              task.description
-                ? "text-gray-900"
-                : "text-gray-500"
-            }
+            className={task.description ? "text-slate-900" : "text-slate-500"}
           >
             {task.description || "No description"}
           </span>
@@ -494,20 +560,15 @@ const TaskDetailsTab = ({
     </div>
 
     {/* Priority */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">
         Priority
       </label>
       {permissions.canEditTask ? (
         <select
           value={getCurrentValue("priority") || "medium"}
           onChange={(e) => handleFieldChange("priority", e.target.value)}
-          className="py-2 px-3 border-none rounded text-sm text-white font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-          style={{
-            backgroundColor: getPriorityColor(
-              getCurrentValue("priority") || task.priority
-            ),
-          }}
+          className="px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         >
           <option value="low">Low</option>
           <option value="medium">Medium</option>
@@ -515,18 +576,15 @@ const TaskDetailsTab = ({
           <option value="urgent">Urgent</option>
         </select>
       ) : (
-        <span
-          className="inline-block py-2 px-3 rounded text-sm text-white font-semibold"
-          style={{ backgroundColor: getPriorityColor(task.priority) }}
-        >
+        <div className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-700">
           {(task.priority || "medium").toUpperCase()}
-        </span>
+        </div>
       )}
     </div>
 
     {/* Due Date */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">
         Due Date
       </label>
       {permissions.canEditTask ? (
@@ -534,130 +592,163 @@ const TaskDetailsTab = ({
           type="date"
           value={getCurrentValue("dueDate") || ""}
           onChange={(e) => handleFieldChange("dueDate", e.target.value)}
-          className="py-2 px-3 border border-gray-300"
+          className="px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         />
       ) : (
-        <div className="py-2 px-3 text-sm text-gray-900">
+        <div className="px-4 py-3 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl">
           {task.dueDate ? formatDate(task.dueDate) : "No due date"}
         </div>
       )}
     </div>
 
     {/* Status */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
-        Status
-      </label>
-      <div className="text-sm text-gray-600">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">Status</label>
+      <div className="px-4 py-3 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl">
         {task.status.replace("-", " ").toUpperCase()}
       </div>
     </div>
 
     {/* Assignee */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">
         Assigned To
       </label>
       {permissions.canEditTask ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {/* Current assignees display */}
-          <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
             {(() => {
               const current = (getCurrentValue("assignedTo") as string[]) || [];
               return current.length > 0 ? (
-                current.map((assigneeId: string) => {
-                  const assignee: any = members.find(
-                    (m: any) => m.user._id === assigneeId
-                  );
-                  return assignee ? (
-                    <div
-                      key={assignee.user._id}
-                      className="flex items-center gap-2 px-2 py-1 bg-blue-100"
-                    >
-                      <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold">
-                        {assignee.user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-gray-900">
-                        {assignee.user.name}
-                      </span>
-                      <button
-                        onClick={() => {
-                          handleFieldChange(
-                            "assignedTo",
-                            current.filter((id: string) => id !== assigneeId)
-                          );
-                        }}
-                        className="text-red-500 hover:text-red-700 text-xs ml-1"
+                <div className="flex flex-wrap gap-2">
+                  {current.map((assigneeId: string) => {
+                    const assignee: any = members.find(
+                      (m: any) => m.user._id === assigneeId
+                    );
+                    return assignee ? (
+                      <div
+                        key={assignee.user._id}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
                       >
-                        ×
-                      </button>
-                    </div>
-                  ) : null;
-                })
+                        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold">
+                          {assignee.user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-slate-900 text-sm font-medium">
+                          {assignee.user.name}
+                        </span>
+                        <button
+                          onClick={() => {
+                            handleFieldChange(
+                              "assignedTo",
+                              current.filter((id: string) => id !== assigneeId)
+                            );
+                          }}
+                          className="ml-1 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
               ) : (
-                <span className="text-sm text-gray-500">
+                <div className="px-4 py-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl">
                   Unassigned
-                </span>
+                </div>
               );
             })()}
           </div>
 
           {/* Add assignee dropdown */}
-          <select
-            onChange={(e) => {
-              const userId = e.target.value;
-              const current = (getCurrentValue("assignedTo") as string[]) || [];
-              if (userId && !current.includes(userId)) {
-                handleFieldChange("assignedTo", [...current, userId]);
-              }
-              e.target.value = ""; // Reset select
-            }}
-            className="py-2 px-3 border border-gray-300"
-          >
-            <option value="">Add assignee...</option>
-            {(() => {
-              const current = (getCurrentValue("assignedTo") as string[]) || [];
-              return members
-                .filter((member: any) => !current.includes(member.user._id))
-                .map((member: any) => (
-                  <option key={member.user._id} value={member.user._id}>
-                    {member.user.name}
-                  </option>
-                ));
-            })()}
-          </select>
+          <div className="relative">
+            <select
+              onChange={(e) => {
+                const userId = e.target.value;
+                const current =
+                  (getCurrentValue("assignedTo") as string[]) || [];
+                if (userId && !current.includes(userId)) {
+                  handleFieldChange("assignedTo", [...current, userId]);
+                }
+                e.target.value = ""; // Reset select
+              }}
+              className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none"
+            >
+              <option value="">Add assignee...</option>
+              {(() => {
+                const current =
+                  (getCurrentValue("assignedTo") as string[]) || [];
+                return members
+                  .filter((member: any) => !current.includes(member.user._id))
+                  .map((member: any) => (
+                    <option key={member.user._id} value={member.user._id}>
+                      {member.user.name}
+                    </option>
+                  ));
+              })()}
+            </select>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <svg
+                className="w-4 h-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
           {task.assignedTo && task.assignedTo.length > 0 ? (
-            task.assignedTo.map((assignee: any) => (
-              <div
-                key={assignee._id}
-                className="flex items-center gap-2 px-2 py-1 bg-blue-100"
-              >
-                <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold">
-                  {assignee.name.charAt(0).toUpperCase()}
+            <div className="flex flex-wrap gap-2">
+              {task.assignedTo.map((assignee: any) => (
+                <div
+                  key={assignee._id}
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg"
+                >
+                  <div className="w-6 h-6 rounded-full bg-slate-500 text-white flex items-center justify-center text-xs font-semibold">
+                    {assignee.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-slate-900 text-sm font-medium">
+                    {assignee.name}
+                  </span>
                 </div>
-                <span className="text-gray-900">
-                  {assignee.name}
-                </span>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
-            <span className="text-sm text-gray-500">
+            <div className="px-4 py-3 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl">
               Unassigned
-            </span>
+            </div>
           )}
         </div>
       )}
     </div>
 
     {/* Created By */}
-    <div>
-      <label className="block mb-2 font-medium text-sm text-gray-700">
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-900">
         Created By
       </label>
-      <div className="text-sm text-gray-600">
+      <div className="px-4 py-3 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl">
         {task.createdBy.name} on {formatDate(task.createdAt)}
       </div>
     </div>
@@ -678,23 +769,23 @@ const CommentsTab = ({
   currentUserId,
   canDeleteAnyComment,
 }: any) => (
-  <div className="flex flex-col gap-4">
+  <div className="space-y-6">
     {/* Add Comment */}
-    <div>
+    <div className="space-y-4">
       <textarea
         value={newComment}
         onChange={(e) => setNewComment(e.target.value)}
         placeholder="Add a comment..."
         rows={3}
-        className="w-full p-2.5 border border-gray-300"
+        className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
       />
       <button
         onClick={handleAddComment}
         disabled={!newComment.trim()}
-        className={`mt-2 py-2 px-4 border-none rounded text-sm transition-colors ${
+        className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
           newComment.trim()
-            ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
-            : "bg-gray-300"
+            ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
+            : "bg-slate-200 text-slate-400 cursor-not-allowed"
         }`}
       >
         Add Comment
@@ -703,102 +794,179 @@ const CommentsTab = ({
 
     {/* Comments List */}
     {comments.length === 0 ? (
-      <div className="text-center py-5 text-gray-500">
-        No comments yet
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+          No comments yet
+        </h3>
+        <p className="text-slate-600">
+          Be the first to add a comment to this task
+        </p>
       </div>
     ) : (
-      comments.map((comment: any) => (
-        <div
-          key={comment._id}
-          className="p-3 border border-gray-200"
-        >
-          <div className="flex justify-between mb-2">
-            <div>
-              <span className="font-semibold text-sm text-gray-900">
-                {comment.user.name}
-              </span>
-              <span className="text-xs text-gray-500">
-                {new Date(comment.createdAt).toLocaleString()}
-                {comment.edited && " (edited)"}
-              </span>
+      <div className="space-y-4">
+        {comments.map((comment: any) => (
+          <div
+            key={comment._id}
+            className="p-4 bg-slate-50 border border-slate-200 rounded-xl"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <span className="text-sm font-semibold text-blue-700">
+                    {comment.user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-semibold text-sm text-slate-900">
+                    {comment.user.name}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {new Date(comment.createdAt).toLocaleString()}
+                    {comment.edited && " (edited)"}
+                  </div>
+                </div>
+              </div>
+              {(comment.user._id === currentUserId || canDeleteAnyComment) && (
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(comment._id);
+                      setEditedCommentContent(comment.content);
+                    }}
+                    className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="Edit comment"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteComment(comment._id)}
+                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Delete comment"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
-            {(comment.user._id === currentUserId || canDeleteAnyComment) && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingCommentId(comment._id);
-                    setEditedCommentContent(comment.content);
-                  }}
-                  className="border-none bg-transparent cursor-pointer text-blue-500 text-xs hover:text-blue-600 transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteComment(comment._id)}
-                  className="border-none bg-transparent cursor-pointer text-red-500 text-xs hover:text-red-600 transition-colors"
-                >
-                  Delete
-                </button>
+            {editingCommentId === comment._id ? (
+              <div className="space-y-3">
+                <textarea
+                  value={editedCommentContent}
+                  onChange={(e) => setEditedCommentContent(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 text-sm border border-blue-500 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleUpdateComment(comment._id)}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setEditedCommentContent("");
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm leading-relaxed text-slate-900">
+                {comment.content}
               </div>
             )}
           </div>
-          {editingCommentId === comment._id ? (
-            <div>
-              <textarea
-                value={editedCommentContent}
-                onChange={(e) => setEditedCommentContent(e.target.value)}
-                rows={3}
-                className="w-full p-2 border border-blue-500 rounded text-sm bg-white"
-              />
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={() => handleUpdateComment(comment._id)}
-                  className="py-1.5 px-3 border-none rounded bg-blue-500 text-white cursor-pointer text-xs hover:bg-blue-600 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingCommentId(null);
-                    setEditedCommentContent("");
-                  }}
-                  className="py-1.5 px-3 border border-gray-300"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm leading-relaxed text-gray-900">
-              {comment.content}
-            </div>
-          )}
-        </div>
-      ))
+        ))}
+      </div>
     )}
   </div>
 );
 
 const ActivityTab = ({ activities, formatActivityMessage }: any) => (
-  <div className="flex flex-col gap-3">
+  <div className="space-y-4">
     {activities.length === 0 ? (
-      <div className="text-center py-5 text-gray-500">
-        No activity yet
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+          No activity yet
+        </h3>
+        <p className="text-slate-600">
+          Task activity will appear here as changes are made
+        </p>
       </div>
     ) : (
-      activities.map((activity: any) => (
-        <div
-          key={activity._id}
-          className="p-3 border-l-[3px] border-blue-500 bg-gray-100"
-        >
-          <div className="text-sm mb-1 text-gray-900">
-            {formatActivityMessage(activity)}
+      <div className="space-y-3">
+        {activities.map((activity: any) => (
+          <div
+            key={activity._id}
+            className="p-4 border-l-4 border-blue-500 bg-slate-50 rounded-r-xl"
+          >
+            <div className="text-sm text-slate-900 mb-1">
+              {formatActivityMessage(activity)}
+            </div>
+            <div className="text-xs text-slate-500">
+              {new Date(activity.createdAt).toLocaleString()}
+            </div>
           </div>
-          <div className="text-xs text-gray-500">
-            {new Date(activity.createdAt).toLocaleString()}
-          </div>
-        </div>
-      ))
+        ))}
+      </div>
     )}
   </div>
 );

@@ -58,11 +58,8 @@ const InputField = memo(
     errors,
     disabled,
   }: InputFieldProps) => (
-    <div>
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-2"
-      >
+    <div className="space-y-2">
+      <label htmlFor={name} className="block text-sm font-medium text-slate-900">
         {label}
       </label>
       <input
@@ -72,7 +69,7 @@ const InputField = memo(
         {...register(name)}
         disabled={disabled}
         aria-describedby={errors[name] ? `${name}-error` : undefined}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3 text-sm border border-slate-300 rounded-xl bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       />
       <ErrorMessage message={errors[name]?.message} />
     </div>
@@ -142,40 +139,46 @@ const Register = memo(() => {
   // console.log('errorrrrrr', errors)
 
   return (
-    // Main container with responsive centering and background
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      {/* Registration card with modern styling */}
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Create Account
-          </h2>
-          <p className="text-gray-600 text-sm mb-8">
-            Join us to start managing your projects
-          </p>
-        </div>
-
-        {/* Conditional rendering of alerts based on form state */}
-        {(formState.status === "error" || formState.status === "success") && (
-          <div className="mb-6">
-            {formState.status === "error" && (
-              <ErrorAlert
-                message={formState.message}
-                onClose={() => setFormState({ status: "idle" })}
-              />
-            )}
-            {formState.status === "success" && (
-              <SuccessAlert message={formState.message} />
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          {/* Header Section */}
+          <div className="px-8 py-8 text-center bg-gradient-to-r from-green-600 to-green-700 text-white">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">
+              Create Account
+            </h1>
+            <p className="text-green-100">Join us to start managing your projects</p>
           </div>
-        )}
 
-        {/* Registration form with validation and accessibility features */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-6"
-          noValidate // Disable native HTML5 validation in favor of React Hook Form
-        >
+          {/* Form Section */}
+          <div className="px-8 py-8">
+
+            {/* Conditional rendering of alerts based on form state */}
+            {(formState.status === "error" || formState.status === "success") && (
+              <div className="mb-6">
+                {formState.status === "error" && (
+                  <ErrorAlert
+                    message={formState.message}
+                    onClose={() => setFormState({ status: "idle" })}
+                  />
+                )}
+                {formState.status === "success" && (
+                  <SuccessAlert message={formState.message} />
+                )}
+              </div>
+            )}
+
+            {/* Registration form with validation and accessibility features */}
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+              noValidate // Disable native HTML5 validation in favor of React Hook Form
+            >
           <InputField
             label="Full Name"
             type="text"
@@ -206,54 +209,32 @@ const Register = memo(() => {
             disabled={formState.status === "loading"}
           />
 
-          {/* Submit button with loading state and accessibility features */}
-          <button
-            type="submit"
-            disabled={formState.status === "loading"}
-            className="w-full flex justify-center items-center py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-          >
-            {formState.status === "loading" ? (
-              <>
-                {/* Animated loading spinner for visual feedback during submission */}
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Creating Account...
-              </>
-            ) : (
-              "Create Account"
-            )}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={formState.status === "loading"}
+                className="w-full flex justify-center items-center py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-sm hover:shadow-lg"
+              >
+                {formState.status === "loading" ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+                  </div>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </form>
 
-        {/* Footer with link to login page for existing users */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-            >
-              Sign in here
-            </Link>
-          </p>
+            <div className="text-center pt-8 border-t border-slate-100 mt-8">
+              <span className="text-slate-600">Already have an account? </span>
+              <Link
+                to="/login"
+                className="text-green-600 hover:text-green-700 font-semibold transition-colors duration-200"
+              >
+                Sign in here
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
