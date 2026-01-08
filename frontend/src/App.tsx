@@ -22,27 +22,27 @@ function App() {
 
   useEffect(() => {
     // Listen for real-time notifications using the centralized socket connection
-    const socket = getSocket();
+      const socket = getSocket();
 
     const handleNewNotification = (data: { notification: Notification; task: any }) => {
-      console.log("📬 New notification received in App:", data);
+          console.log("📬 New notification received in App:", data);
 
-      // Show toast notification
-      const toast: Toast = {
-        id: data.notification._id,
-        title: data.notification.title,
-        message: data.notification.message,
-        type: getToastType(data.notification.type),
-      };
+          // Show toast notification
+          const toast: Toast = {
+            id: data.notification._id,
+            title: data.notification.title,
+            message: data.notification.message,
+            type: getToastType(data.notification.type),
+          };
 
-      setToasts((prev) => [...prev, toast]);
+          setToasts((prev) => [...prev, toast]);
     };
 
     socket.on("notification:new", handleNewNotification);
 
-    return () => {
+      return () => {
       socket.off("notification:new", handleNewNotification);
-    };
+      };
   }, []);
 
   const handleRemoveToast = (id: string) => {

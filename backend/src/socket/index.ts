@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http from "http";
 import jwt from "jsonwebtoken";
 import { instrument } from "@socket.io/admin-ui";
+import { sessionService } from "../services/session.service";
 
 let io: Server;
 
@@ -16,25 +17,60 @@ export const initSocket = (server: http.Server) => {
 
   // Socket authentication middleware
 
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     try {
       const token =
         socket.handshake.auth?.token ||
         socket.handshake.headers.authorization?.split(" ")[1];
 
-      console.log("token********", token);
+      const sessionToken = socket.handshake.auth?.sessionToken;
+
+      console.log("🔐 Socket auth - token:", !!token, "sessionToken:", !!sessionToken);
+      console.log("🔐 Socket auth details - sessionToken value:", sessionToken);
 
       if (!token) return next(new Error("Authentication error"));
 
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_ACCESS_SECRET as string
-      );
+      let decoded: any;
 
-      // attach user info to socket
+      try {
+        // Try to verify as access token first
+        decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string);
+      } catch (error) {
+        // If access token fails, check if it's a temp token for OTP verification
+        try {
+          decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string);
+          if (!decoded.temp) {
+            throw new Error("Invalid token type");
+          }
+        } catch (tempError) {
+          return next(new Error("Authentication error"));
+        }
+      }
+
+      // If session token is provided, validate it
+      if (sessionToken) {
+        console.log("🔐 Validating session token:", sessionToken);
+        const sessionValidation = await sessionService.validateSession(sessionToken);
+        console.log("🔐 Session validation result:", sessionValidation.isValid);
+
+        if (!sessionValidation.isValid) {
+          console.log("❌ Session validation failed for token:", sessionToken);
+          return next(new Error("Invalid session"));
+        }
+
+        // Attach session info to socket
+        socket.data.session = sessionValidation.session;
+        socket.data.sessionToken = sessionToken;
+        console.log("✅ Socket data set - sessionToken:", socket.data.sessionToken);
+      } else {
+        console.log("⚠️ No session token provided in socket auth");
+      }
+
+      // Attach user info to socket
       socket.data.user = decoded;
       next();
     } catch (error) {
+      console.error("Socket authentication error:", error);
       next(new Error("Authentication error"));
     }
   });
@@ -50,7 +86,9 @@ export const initSocket = (server: http.Server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("🔌 User connected:", socket.data.user);
+    console.log("🔌 User connected:", socket.data.user?.userId);
+    console.log("🔌 Socket data - sessionToken:", socket.data.sessionToken);
+    console.log("🔌 Total connected sockets:", io.sockets.sockets.size);
 
     const user = socket.data.user;
 

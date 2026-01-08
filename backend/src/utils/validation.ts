@@ -17,6 +17,17 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, "Password is required"),
+  deviceFingerprint: z.string().optional(),
+  deviceInfo: z.object({
+    fingerprint: z.string(),
+    userAgent: z.string(),
+    browser: z.string(),
+    browserVersion: z.string(),
+    os: z.string(),
+    osVersion: z.string(),
+    device: z.enum(["mobile", "tablet", "desktop"]),
+    platform: z.string()
+  }).optional(),
 });
 
 export const createProjectSchema = z.object({
@@ -147,6 +158,33 @@ export const validate = (schema: z.ZodSchema) => {
     }
   };
 };
+
+// Security validation schemas
+export const verifyOTPSchema = z.object({
+  otp: z.string().length(6, "OTP must be 6 digits").regex(/^\d{6}$/, "OTP must contain only digits"),
+  purpose: z.enum(["login", "logout", "logout_all", "session_logout"]),
+  deviceFingerprint: z.string().optional(),
+  deviceInfo: z.object({
+    fingerprint: z.string(),
+    userAgent: z.string(),
+    browser: z.string(),
+    browserVersion: z.string(),
+    os: z.string(),
+    osVersion: z.string(),
+    device: z.enum(["mobile", "tablet", "desktop"]),
+    platform: z.string()
+  }).optional(),
+  sessionToken: z.string().optional(),
+  exceptCurrent: z.boolean().optional()
+});
+
+export const logoutSessionSchema = z.object({
+  sessionToken: z.string().min(1, "Session token is required")
+});
+
+export const logoutAllSchema = z.object({
+  exceptCurrent: z.boolean().optional().default(true)
+});
 
 // Query validation middleware factory
 export const validateQuery = (schema: z.ZodSchema) => {

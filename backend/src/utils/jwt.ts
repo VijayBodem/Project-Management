@@ -5,7 +5,9 @@ import { env } from "../config/env";
 interface TokenPayload {
   userId: string;
   role: string;
-  name: string
+  name: string;
+  temp?: boolean; // For temporary tokens used in OTP verification
+  purpose?: string; // Purpose of the token (for temp tokens)
 }
 
 export const generateAccessToken = (payload: TokenPayload) => {

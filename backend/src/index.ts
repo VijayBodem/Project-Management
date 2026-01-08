@@ -29,6 +29,7 @@ import {
 
 // API route handlers
 import authRoutes from "./routes/auth.routes";
+import securityRoutes from "./routes/security.routes";
 import protectedRoutes from "./routes/protected.routes";
 import tokenRoutes from "./routes/token.routes";
 import projectRoutes from "./routes/project.routes";
@@ -112,6 +113,9 @@ app.get("/health", (req, res) => {
 // Apply strict rate limiting to authentication routes
 // Prevents brute force attacks and credential stuffing
 app.use("/api/auth", authLimiter, authRoutes);
+
+// Security routes (OTP verification, session management)
+app.use("/api/security", authLimiter, securityRoutes);
 
 // Token routes (refresh, revoke) - moderate rate limiting
 app.use("/api/token", tokenRoutes);

@@ -18,6 +18,8 @@
   "type": "commonjs",
   "dependencies": {
     "@socket.io/admin-ui": "^0.5.1",
+    "@types/nodemailer": "^7.0.4",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -29,6 +31,7 @@
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2",
+    "nodemailer": "^7.0.12",
     "socket.io": "^4.8.3",
     "xss-clean": "^0.1.4",
     "zod": "^4.2.1"

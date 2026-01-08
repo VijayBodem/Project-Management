@@ -4,45 +4,70 @@ import { getAccessToken } from "../utils/token";
 let socket: Socket | null = null;
 let isConnecting = false;
 
-export const connectSocket = () => {
-  // If already connected, return existing socket
-  if (socket?.connected) {
+export const connectSocket = (auth?: {
+  token?: string;
+  sessionToken?: string;
+}) => {
+  // If already connected and no new auth provided, return existing socket
+  if (socket?.connected && !auth) {
     console.log("🔌 Socket already connected, returning existing connection");
     return socket;
   }
 
-  // If currently connecting, wait for connection to complete
-  if (isConnecting && socket) {
-    console.log("🔌 Socket connection in progress, returning existing instance");
+  // If currently connecting and no new auth, wait for connection to complete
+  if (isConnecting && socket && !auth) {
+    console.log(
+      "🔌 Socket connection in progress, returning existing instance"
+    );
     return socket;
   }
 
-  const token = getAccessToken();
+  // Get current auth from socket or use provided auth
+  const currentAuth = auth || (socket?.auth as any) || {};
+  const token = currentAuth.token || getAccessToken();
 
-  console.log("🔌 Creating new socket connection", { token: !!token });
-
-  isConnecting = true;
-
-  socket = io(import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000", {
-    auth: { token },
-    autoConnect: true,
+  console.log("🔌 Creating/connecting socket", {
+    token: !!token,
+    sessionToken: !!currentAuth.sessionToken,
+    alreadyExists: !!socket,
   });
 
-  socket.on("connect", () => {
-    console.log("🔌 Socket connected:", socket?.id);
-    isConnecting = false;
-    socket?.emit("socket:ready");
-  });
+  // If socket doesn't exist, create it
+  if (!socket) {
+    socket = io(
+      import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000",
+      {
+        auth: { token, sessionToken: currentAuth.sessionToken },
+        autoConnect: false, // Don't auto-connect initially
+      }
+    );
 
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected");
-    isConnecting = false;
-  });
+    // Set up event listeners only once
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected:", socket?.id);
+      isConnecting = false;
+      socket?.emit("socket:ready");
+    });
 
-  socket.on("connect_error", (error) => {
-    console.error("❌ Socket connection error:", error);
-    isConnecting = false;
-  });
+    socket.on("disconnect", () => {
+      console.log("❌ Socket disconnected");
+      isConnecting = false;
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error);
+      isConnecting = false;
+    });
+  } else {
+    // Update auth on existing socket
+    (socket as any).auth = { token, sessionToken: currentAuth.sessionToken };
+  }
+
+  // Connect if not already connecting/connected
+  if (!socket.connected && !isConnecting) {
+    isConnecting = true;
+    socket.connect();
+  }
 
   return socket;
 };
@@ -59,8 +84,28 @@ export const disconnectSocket = () => {
 export const getSocket = () => {
   if (!socket) {
     console.log("🔌 Creating socket instance (not connecting)");
-    socket = io(import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000", {
-      autoConnect: false,
+    socket = io(
+      import.meta.env.VITE_API_SOCKET_URL || "http://localhost:5000",
+      {
+        autoConnect: false,
+      }
+    );
+
+    // Set up event listeners
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected:", socket?.id);
+      isConnecting = false;
+      socket?.emit("socket:ready");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("❌ Socket disconnected");
+      isConnecting = false;
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error);
+      isConnecting = false;
     });
   }
   return socket;
